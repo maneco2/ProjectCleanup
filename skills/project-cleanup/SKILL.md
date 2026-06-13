@@ -23,6 +23,9 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - Do not say `create_thread` is unavailable until both the exact and fallback thread-tool searches have been attempted and the returned tool names have been checked.
 - If `tool_search` exposes `codex_app.create_thread`, treat thread creation as available. Do not say the tool did not appear.
 - For `codex_app.create_thread`, `target.project.projectId` may be the current saved project id or the current workspace root path.
+- A new thread counts as created only when the current `/project-cleanup now` run successfully calls `create_thread` and receives a `threadId` or `pendingWorktreeId`.
+- Treat ProjectCleanup as a global installed skill: the same `/project-cleanup` commands apply in every project chat where this skill is available. Do not require per-project activation beyond the installed skill being loaded by Codex.
+- Distinguish global command availability from session tool availability: `/project-cleanup now` can run in any loaded skill session, but automatic new-thread creation still depends on that session exposing `codex_app.create_thread`.
 - Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
@@ -37,6 +40,7 @@ Primary trigger:
 
 Command dispatch rules:
 
+- Apply these dispatch rules in every Codex project chat where the installed skill is available; they are not project-local commands.
 - Execute actions only when the user gives the canonical slash command `/project-cleanup` or a clear subcommand such as `/project-cleanup check`, `/project-cleanup preview`, `/project-cleanup status`, `/project-cleanup refresh`, or `/project-cleanup now`.
 - If the user references the skill chip/path only, for example `[$project-cleanup](...)`, do not run the full cleanup flow automatically. Briefly list the valid commands and ask which one they want.
 - If the user references the skill chip/path plus a known subcommand, for example `[$project-cleanup](...) refresh`, treat it as the equivalent canonical command `/project-cleanup refresh` and execute only that subcommand.
@@ -54,6 +58,14 @@ Subcommands:
 | `/project-cleanup now` | Run the full approved handoff flow immediately: confirm project, generate `agent.md`, validate it, prepare the next-thread init prompt, ask before `create_thread`, then ask separately before archival. |
 
 Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora` should be treated as equivalent to `/project-cleanup refresh` and `/project-cleanup now` for old handoffs, with the same terminal behavior, but new docs and recommendations should use the English commands.
+
+## Global Skill Behavior
+
+ProjectCleanup is intended to be installed once under the user's Codex skills directory and then used from any project chat with the same commands. Do not treat each project as needing its own activation, copied command list, or local configuration file.
+
+If a chat does not load the `project-cleanup` skill at all, report that the installed global skill was not exposed in that session and ask the user to restart/reload Codex or reinstall/sync the skill. Do not rewrite the project or create unrelated local command files as a workaround.
+
+If the skill is loaded but `codex_app.create_thread` is not exposed after `tool_search`, the command still worked; only automatic thread creation is blocked by the current session's tool availability. In that case, finish with the manual prompt and explicitly say `No new thread was created by this run`.
 
 ## Workflow
 
@@ -75,7 +87,8 @@ Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora
 16. Do not use a `projectless` `create_thread` target for a project handoff unless the user explicitly approves that tradeoff after being told it may not attach to the active saved project/root.
 17. Ask for confirmation before calling `create_thread` when the required target data is available, then create the new thread with the init prompt from `agent.md`. If supported, rename it to `<current title> NEW` with `set_thread_title` after creation.
 18. If `create_thread` fails because the workspace root was rejected, retry once with the best confirmed saved project root. If it fails again, report the concrete failure, provide the manual prompt, and do not archive anything.
-19. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
+19. Report `New thread created` only if this run received a fresh `threadId` or `pendingWorktreeId` from `create_thread`. Existing sidebar threads, previous test threads, similarly named `NEW` threads, or manual prompts do not count.
+20. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
 
 ## Check Mode
 
@@ -255,9 +268,10 @@ Do not save memory automatically.
 If thread tools are unavailable after both `tool_search` queries, if `create_thread` is available but the saved workspace root cannot be determined, or if `create_thread` fails twice:
 
 1. Keep the old thread active.
-2. Report the failure briefly.
+2. Report the failure briefly and explicitly say `No new thread was created by this run`.
 3. Provide the path to `agent.md`.
 4. Provide the manual init prompt ready for a new chat.
+5. If the user reports that another `NEW` thread exists, do not treat it as this run's result unless its `threadId` came from the current `create_thread` call.
 
 Do not call `fork_thread`. Do not archive the old thread.
 
@@ -283,6 +297,7 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Saying `create_thread` is unavailable without checking thread tools | Run the exact `tool_search` query first, retry with the fallback query, inspect returned tool names, and use precise wording about missing tools versus missing workspace root |
 | Saying the tool did not appear when `tool_search` returned `codex_app.create_thread` | Treat `create_thread` as available; if blocked, name the real blocker such as unclear saved workspace root |
 | Refusing to use the current workspace root as `projectId` | Use the saved workspace root path for `target.project.projectId`; the schema allows saved project id or workspace root |
+| Treating an existing `NEW` sidebar item as success | Only a fresh `threadId` or `pendingWorktreeId` returned by this run's `create_thread` call counts |
 | Creating or editing `AGENTS.md` during cleanup | Read existing `AGENTS.md` as context only; ProjectCleanup writes `docs/codex/project-cleanup/agent.md` |
 | Saving all chat text | Save decisions and state, not transcript noise |
 | Ignoring size | Aim for 800-1500 words, but do not add filler |
