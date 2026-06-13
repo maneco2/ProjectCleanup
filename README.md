@@ -38,7 +38,7 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 
 Use the canonical slash commands below. If the skill is selected from a chip/path such as `[$project-cleanup](...)`, append a known subcommand or choose one of these slash commands; the skill reference alone should not run the full cleanup flow or the next-thread init prompt.
 
-Explicit subcommands always win. `now` executes the full handoff flow immediately.
+Explicit subcommands always win. Commands execute immediately when the active project path is clear; they should not stop just to ask for a separate "yes" before writing `agent.md` or, for `now`, before creating the new thread.
 
 | Command | Purpose |
 | --- | --- |
@@ -48,6 +48,28 @@ Explicit subcommands always win. `now` executes the full handoff flow immediatel
 | `/project-cleanup status` | Report whether `agent.md` exists and whether it looks fresh or stale. |
 | `/project-cleanup refresh` | Refresh the current project's `agent.md` without creating a new thread. |
 | `/project-cleanup now` | Run the full handoff flow immediately with validation and confirmation gates. |
+
+## Approval Policy
+
+ProjectCleanup should not ask for a separate approval before running these explicit commands:
+
+- `/project-cleanup`
+- `/project-cleanup check`
+- `/project-cleanup preview`
+- `/project-cleanup status`
+- `/project-cleanup refresh`
+- `/project-cleanup now`
+- `/project-cleanup revisar`
+- `/project-cleanup agora`
+- `[$project-cleanup](...) check`
+- `[$project-cleanup](...) preview`
+- `[$project-cleanup](...) status`
+- `[$project-cleanup](...) refresh`
+- `[$project-cleanup](...) now`
+
+For these commands, ProjectCleanup should state the active project path and proceed. It should ask for confirmation only when the root is missing, ambiguous, outside the current workspace, or conflicts with the requested project.
+
+For `/project-cleanup now`, new-thread creation is part of the command when `codex_app.create_thread` is exposed. Archiving the old thread remains a separate confirmation after the new thread exists.
 
 ## Global Skill Usage
 
