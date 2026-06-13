@@ -1,6 +1,6 @@
 ---
 name: project-cleanup
-description: Use when a Codex project chat is long, slow, repeatedly compacted, or needs a clean handoff, performance checkpoint, review, or new thread without mixing projects, roots, or unrelated conversation history.
+description: Use when a Codex project chat is long, slow, repeatedly compacted, or needs a clean handoff, performance checkpoint, preview, status check, review, validation, or new thread without mixing projects, roots, or unrelated conversation history.
 ---
 
 # ProjectCleanup
@@ -38,22 +38,46 @@ Subcommands:
 | Command | Behavior |
 | --- | --- |
 | `/project-cleanup check` | Diagnose whether the current chat feels light, medium, or heavy. Do not write files, create threads, or archive anything. |
+| `/project-cleanup preview` | Draft the proposed `agent.md` in chat only. Do not write files, create threads, or archive anything. |
+| `/project-cleanup status` | Report whether `docs/codex/project-cleanup/agent.md` exists, its approximate word count, age, and likely freshness. Do not modify anything. |
 | `/project-cleanup revisar` | Review and refresh the current project's existing `agent.md`. Ask before writing if the active project has not been confirmed in this turn. Do not create a new thread. |
-| `/project-cleanup agora` | Run the full approved handoff flow: confirm project, generate `agent.md`, prepare init prompt, ask before `create_thread`, then ask separately before archival. |
+| `/project-cleanup agora` | Run the full approved handoff flow: confirm project, generate `agent.md`, validate it, prepare init prompt, ask before `create_thread`, then ask separately before archival. |
 
 ## Workflow
 
 1. Identify the current thread title when available and the current `cwd`.
 2. State the active project path and ask for confirmation before writing files.
 3. Inspect only current-project sources needed to understand the handoff: `AGENTS.md`, project docs, recent plans, relevant logs, and the current conversation summary available in context.
-4. Generate or replace `docs/codex/project-cleanup/agent.md` using `references/agent-template.md`.
-5. Keep the handoff concise: preserve stable facts, decisions, validated commands, relevant files, current state, next actions, and risks.
-6. Remove noise: repeated conversation, abandoned attempts, long logs, generated dumps, stale guesses, and unrelated project context.
-7. Show the user a short handoff summary and the exact init prompt for the next thread.
-8. Ask for confirmation before calling `create_thread`.
-9. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
-10. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
-11. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
+4. Generate a structured handoff using `references/agent-template.md`.
+5. Apply the quality gates: required sections, target size, current-project boundary, no secrets, validated commands, risks, and concrete next actions.
+6. For `/project-cleanup preview`, show the proposed handoff in chat and stop without writing.
+7. For `/project-cleanup revisar` or `/project-cleanup agora`, generate or replace `docs/codex/project-cleanup/agent.md`.
+8. Validate `agent.md` with `scripts/validate_agent_md.py` when Python is available; otherwise perform the manual checklist in this skill.
+9. Show the user a short handoff summary, validation result, and the exact init prompt for the next thread.
+10. Ask for confirmation before calling `create_thread`.
+11. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
+12. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
+13. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
+
+## Check Mode
+
+For `/project-cleanup check`, classify the current chat:
+
+| Level | Signals | Recommendation |
+| --- | --- | --- |
+| `light` | Short chat, stable context, no repeated compacting, fast responses | Continue normally. |
+| `medium` | Some accumulated decisions, noticeable token load, several files or commands discussed | Offer `/project-cleanup preview` or `/project-cleanup revisar`. |
+| `heavy` | Slow responses, repeated compaction, user mentions context loss, many decisions, long logs, or high risk of forgetting state | Recommend `/project-cleanup agora`. |
+
+Use this output shape:
+
+```text
+ProjectCleanup check
+- Status: light | medium | heavy
+- Why: <short evidence>
+- Recommendation: <continue | preview | revisar | agora>
+- No files changed.
+```
 
 ## Performance Checkpoint
 
@@ -84,6 +108,70 @@ docs/codex/project-cleanup/agent.md
 ```
 
 Replace stale content instead of appending forever. Keep the file useful as the single source for the next clean chat.
+
+## Handoff Size Policy
+
+Target size for `agent.md`: **800-1500 words**.
+
+- If it is below 800 words, verify that project scope, current state, decisions, validated commands, risks, and next actions are still covered.
+- If it is above 1500 words, compress wording, remove stale details, merge duplicate decisions, summarize long logs, and keep only operational facts needed by the next thread.
+- Do not pad with filler to reach the lower target. Completeness matters more than word count.
+
+## Required Agent Sections
+
+Every generated or refreshed `agent.md` should include:
+
+- Init prompt.
+- Project scope and boundary.
+- Language settings.
+- Current state.
+- Important decisions.
+- Relevant files.
+- Validated commands.
+- Next actions.
+- Risks and guardrails.
+- Suggested memory note.
+- Validation checklist.
+
+## Language Policy
+
+Separate the user's preferred response language from operational prompt language:
+
+- Preserve the user's preferred response language when known.
+- Default to Portuguese for this user's local projects unless the project or user says otherwise.
+- Keep code, logs, command names, file paths, and technical identifiers in their natural language.
+- It is acceptable for ProjectCleanup's own checkpoint prompt to be in English while the new thread response style remains Portuguese.
+
+## Agent Validation
+
+Prefer the bundled validator:
+
+```text
+python scripts/validate_agent_md.py docs/codex/project-cleanup/agent.md
+```
+
+Validation should check:
+
+- Required sections exist.
+- Approximate word count is reported.
+- `agent.md` stays in the 800-1500 word target when practical.
+- No common secret patterns appear.
+- The file names the active project/root.
+- Next actions and risks are present.
+
+If the validator is unavailable, perform the checklist manually and report any gaps before creating a new thread.
+
+## Status Mode
+
+For `/project-cleanup status`, inspect only the current project and report:
+
+- Whether `docs/codex/project-cleanup/agent.md` exists.
+- Approximate word count.
+- Last modified time when available.
+- Whether it appears fresh, stale, or missing.
+- Recommended next command: `preview`, `revisar`, or `agora`.
+
+Do not write files in status mode.
 
 ## New Thread Init Prompt
 
@@ -117,7 +205,7 @@ Primeira resposta esperada:
 
 ## Memory Policy
 
-Memory is optional. If the chat contains stable, reusable knowledge, propose a short memory note to the user. Save it only after explicit approval and only through the platform's memory workflow.
+Memory is optional. If the chat contains stable, reusable knowledge, add a `Suggested Memory Note` section to `agent.md` and ask the user for separate approval.
 
 Good memory candidates:
 
@@ -134,6 +222,8 @@ Bad memory candidates:
 - Temporary debugging guesses.
 - One-off implementation details.
 - Context from another project.
+
+Do not save memory automatically.
 
 ## Fallback
 
@@ -155,6 +245,8 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 - Update current state and next actions.
 - Shorten wording without losing operational detail.
 - Keep project boundaries explicit.
+- Re-check the 800-1500 word target.
+- Keep `Suggested Memory Note` separate from saved memory.
 
 ## Common Mistakes
 
@@ -164,5 +256,6 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Archiving immediately after writing `agent.md` | Archive only after new thread exists and user confirms |
 | Using `fork_thread` for convenience | Use only `create_thread`; otherwise provide manual prompt |
 | Saving all chat text | Save decisions and state, not transcript noise |
+| Ignoring size | Aim for 800-1500 words, but do not add filler |
 | Putting everything in memory | Propose only stable memory, then wait for approval |
 | Continuing silently when the user reports slowness | Offer the Performance Checkpoint prompt before doing more work |
