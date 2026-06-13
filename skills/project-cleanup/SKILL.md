@@ -62,11 +62,11 @@ If the chat appears long, slow, repeatedly compacted, or the user mentions perfo
 Use this prompt:
 
 ```text
-O chat parece pesado ou com risco de perda de contexto. Deseja criar um handoff e iniciar uma nova thread limpa agora?
+This chat appears heavy or at risk of context loss. Would you like to create a handoff and start a clean new thread now?
 
-1. Sim, preparar ProjectCleanup agora.
-2. Aguardar mais e continuar neste chat.
-3. Atualizar somente agent.md.
+1. Yes, prepare ProjectCleanup now.
+2. Wait and continue in this chat.
+3. Update agent.md only.
 ```
 
 Respect the answer:
