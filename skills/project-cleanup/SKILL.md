@@ -20,6 +20,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - Confirm the active project path before writing `agent.md`.
 - Do not edit the project's `AGENTS.md` by default.
 - Do not use `fork_thread` as a fallback because it can carry old history.
+- Do not say `create_thread` is unavailable until a thread-tool search has been attempted.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
 
@@ -56,7 +57,7 @@ Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora
 7. For `/project-cleanup refresh` or `/project-cleanup now`, generate or replace `docs/codex/project-cleanup/agent.md`.
 8. Validate `agent.md` with `scripts/validate_agent_md.py` when Python is available; otherwise perform the manual checklist in this skill.
 9. Show the user a short handoff summary, validation result, and the exact init prompt for the next thread.
-10. Ask for confirmation before calling `create_thread`.
+10. Before calling `create_thread`, use `tool_search` to look for thread tools in the current session. If the search does not expose them, say the session does not expose thread tools and provide the manual prompt instead of claiming `create_thread` is unavailable. Ask for confirmation before calling `create_thread`.
 11. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
 12. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
 13. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
@@ -231,7 +232,7 @@ Do not save memory automatically.
 
 ## Fallback
 
-If thread tools are unavailable or `create_thread` fails twice:
+If thread tools are unavailable after `tool_search` or `create_thread` fails twice:
 
 1. Keep the old thread active.
 2. Report the failure briefly.
@@ -259,6 +260,7 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Reading another project because it looks related | Stay in current `cwd` unless user explicitly names another root |
 | Archiving immediately after writing `agent.md` | Archive only after new thread exists and user confirms |
 | Using `fork_thread` for convenience | Use only `create_thread`; otherwise provide manual prompt |
+| Saying `create_thread` is unavailable without checking thread tools | Run `tool_search` first and use precise wording about missing thread tools |
 | Saving all chat text | Save decisions and state, not transcript noise |
 | Ignoring size | Aim for 800-1500 words, but do not add filler |
 | Putting everything in memory | Propose only stable memory, then wait for approval |
