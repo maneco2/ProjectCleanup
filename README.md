@@ -49,6 +49,18 @@ Explicit subcommands always win. `now` executes the full handoff flow immediatel
 | `/project-cleanup refresh` | Refresh the current project's `agent.md` without creating a new thread. |
 | `/project-cleanup now` | Run the full handoff flow immediately with validation and confirmation gates. |
 
+## Global Skill Usage
+
+Install ProjectCleanup once in your Codex skills directory, then use the same `/project-cleanup` commands from any project chat. The commands are not meant to be configured separately per project.
+
+Automatic new-thread creation is separate from command availability. A chat can load the global skill and still fail to expose Codex's internal `codex_app.create_thread` tool for that session. In that case, ProjectCleanup should complete the handoff, say `No new thread was created by this run`, and provide the manual init prompt.
+
+If a chat does not load the `project-cleanup` skill at all, restart/reload Codex or reinstall/sync the skill under:
+
+```text
+C:\Users\<your-user>\.codex\skills\project-cleanup
+```
+
 ## Check Scoring
 
 `heavy` is reserved for real impact: clear slowdown, repeated compactions, context loss, quality drops, forgotten decisions, or a handoff needed now.
@@ -80,6 +92,8 @@ create_thread set_thread_archived list_threads Codex thread tools
 If that does not expose `create_thread`, it retries with a broader fallback search. Only after both searches fail should it report that the current session does not expose thread tools.
 
 If `tool_search` returns `codex_app.create_thread`, the tool is available. ProjectCleanup must not say the tool did not appear. For project threads, `target.project.projectId` may be the saved project id or the saved workspace root path. If the active handoff path is a subdirectory, use the saved workspace root for `projectId` and keep the exact active subdirectory in the init prompt.
+
+A new thread only counts as created when the current `/project-cleanup now` run receives a fresh `threadId` or `pendingWorktreeId` from `create_thread`. Existing `NEW` threads in the sidebar, old test threads, and manual prompts are not proof that the current command created a chat.
 
 ## Handoff Quality
 
@@ -163,6 +177,7 @@ MIT License. See `LICENSE`.
 - Never use `fork_thread` as fallback.
 - Never say `create_thread` is unavailable without first checking thread tools with exact and fallback `tool_search` queries.
 - Never say the tool did not appear when `tool_search` returned `codex_app.create_thread`; use the saved workspace root as `projectId` or report the real blocker instead.
+- Never claim a new chat was created unless the current run received a fresh `threadId` or `pendingWorktreeId` from `create_thread`.
 - Never archive the old thread before the new thread exists and the user confirms.
 - Do not create or edit the project's `AGENTS.md`; read an existing file as input only.
 - Treat memory as a candidate note until the user explicitly approves saving it.
