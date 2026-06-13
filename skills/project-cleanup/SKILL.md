@@ -20,7 +20,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - Confirm the active project path before writing `agent.md`.
 - Do not edit the project's `AGENTS.md` by default.
 - Do not use `fork_thread` as a fallback because it can carry old history.
-- Do not say `create_thread` is unavailable until a thread-tool search has been attempted.
+- Do not say `create_thread` is unavailable until both the exact and fallback thread-tool searches have been attempted.
 - Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
@@ -64,10 +64,11 @@ Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora
 7. For `/project-cleanup refresh` or `/project-cleanup now`, generate or replace `docs/codex/project-cleanup/agent.md`.
 8. Validate `agent.md` with `scripts/validate_agent_md.py` when Python is available; otherwise perform the manual checklist in this skill.
 9. Show the user a short handoff summary, validation result, and the exact init prompt for the next thread. Keep that prompt separate from the current-thread reply to `/project-cleanup now`.
-10. Before calling `create_thread`, use `tool_search` to look for thread tools in the current session. If the search does not expose them, say the session does not expose thread tools and provide the manual prompt instead of claiming `create_thread` is unavailable. Ask for confirmation before calling `create_thread`.
-11. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
-12. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
-13. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
+10. Before calling `create_thread`, use `tool_search` to look for thread tools in the current session. First search exactly for `create_thread set_thread_archived list_threads Codex thread tools`. If that does not expose `create_thread`, run a second fallback search for `Codex thread create archive tools create_thread set_thread_archived`.
+11. Only if both searches fail to expose `create_thread`, say the session does not expose thread tools and provide the manual prompt instead of claiming `create_thread` is unavailable. Ask for confirmation before calling `create_thread` when it is available.
+12. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
+13. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
+14. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
 
 ## Check Mode
 
@@ -272,7 +273,7 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Reading another project because it looks related | Stay in current `cwd` unless user explicitly names another root |
 | Archiving immediately after writing `agent.md` | Archive only after new thread exists and user confirms |
 | Using `fork_thread` for convenience | Use only `create_thread`; otherwise provide manual prompt |
-| Saying `create_thread` is unavailable without checking thread tools | Run `tool_search` first and use precise wording about missing thread tools |
+| Saying `create_thread` is unavailable without checking thread tools | Run the exact `tool_search` query first, retry with the fallback query, and use precise wording about missing thread tools |
 | Saving all chat text | Save decisions and state, not transcript noise |
 | Ignoring size | Aim for 800-1500 words, but do not add filler |
 | Putting everything in memory | Propose only stable memory, then require approval |
