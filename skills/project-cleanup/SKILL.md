@@ -18,9 +18,10 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - Work only from the current thread and current `cwd`/project.
 - Never merge context from other projects, roots, old chats, or memories unless the user explicitly asks.
 - Confirm the active project path before writing `agent.md`.
-- Do not edit the project's `AGENTS.md` by default.
+- Do not create or edit the project's `AGENTS.md`; read an existing `AGENTS.md` only as input context.
 - Do not use `fork_thread` as a fallback because it can carry old history.
-- Do not say `create_thread` is unavailable until both the exact and fallback thread-tool searches have been attempted.
+- Do not say `create_thread` is unavailable until both the exact and fallback thread-tool searches have been attempted and the returned tool names have been checked.
+- If `tool_search` exposes `codex_app.create_thread`, treat thread creation as available. Do not say the tool did not appear.
 - Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
@@ -57,18 +58,22 @@ Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora
 
 1. Identify the current thread title when available and the current `cwd`.
 2. State the active project path and ask for confirmation before writing files.
-3. Inspect only current-project sources needed to understand the handoff: `AGENTS.md`, project docs, recent plans, relevant logs, and the current conversation summary available in context.
+3. Inspect only current-project sources needed to understand the handoff: existing `AGENTS.md`, project docs, recent plans, relevant logs, and the current conversation summary available in context. Do not create or modify `AGENTS.md`.
 4. Generate a structured handoff using `references/agent-template.md`.
 5. Apply the quality gates: required sections, target size, current-project boundary, no secrets, validated commands, risks, and concrete next actions.
 6. For `/project-cleanup preview`, show the proposed handoff in chat and stop without writing.
 7. For `/project-cleanup refresh` or `/project-cleanup now`, generate or replace `docs/codex/project-cleanup/agent.md`.
 8. Validate `agent.md` with `scripts/validate_agent_md.py` when Python is available; otherwise perform the manual checklist in this skill.
 9. Show the user a short handoff summary, validation result, and the exact init prompt for the next thread. Keep that prompt separate from the current-thread reply to `/project-cleanup now`.
-10. Before calling `create_thread`, use `tool_search` to look for thread tools in the current session. First search exactly for `create_thread set_thread_archived list_threads Codex thread tools`. If that does not expose `create_thread`, run a second fallback search for `Codex thread create archive tools create_thread set_thread_archived`.
-11. Only if both searches fail to expose `create_thread`, say the session does not expose thread tools and provide the manual prompt instead of claiming `create_thread` is unavailable. Ask for confirmation before calling `create_thread` when it is available.
-12. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
-13. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
-14. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
+10. Before any manual new-thread fallback, actually call `tool_search.tool_search_tool`; do not just reason from the visible tools list. First search exactly for `create_thread set_thread_archived list_threads Codex thread tools`. If that does not expose `create_thread`, run a second fallback search for `Codex thread create archive tools create_thread set_thread_archived`.
+11. Inspect the returned tool names. If the result includes `codex_app.create_thread`, `create_thread` is available. Do not write "the tool did not appear" or similar. If the result includes `codex_app.set_thread_archived`, archival is available too.
+12. If both searches fail to expose `create_thread`, say precisely: `This session does not expose Codex thread creation tools after tool_search.` Then provide the manual prompt and do not archive anything.
+13. If `codex_app.create_thread` is available, prepare a call to it instead of falling back manually. Use a project target only when the current saved `projectId` is exposed by the app context or a tool result. Do not guess `projectId`, and do not substitute the thread id or cwd for it.
+14. If `create_thread` is available but no saved `projectId` is exposed, say precisely: `create_thread is available, but this session did not expose the saved projectId needed for an automatic project thread.` Provide the manual prompt and keep the old thread active. Do not claim the tool is missing.
+15. Do not use a `projectless` `create_thread` target for a project handoff unless the user explicitly approves that tradeoff after being told it may not attach to the active saved project/root.
+16. Ask for confirmation before calling `create_thread` when the required target data is available, then create the new thread with title `<current title> NEW` when titles are supported, using the init prompt from `agent.md`.
+17. If `create_thread` fails, retry once. If it fails again, report the concrete failure, provide the manual prompt, and do not archive anything.
+18. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
 
 ## Check Mode
 
@@ -245,7 +250,7 @@ Do not save memory automatically.
 
 ## Fallback
 
-If thread tools are unavailable after `tool_search` or `create_thread` fails twice:
+If thread tools are unavailable after both `tool_search` queries, if `create_thread` is available but required target data such as `projectId` is not exposed, or if `create_thread` fails twice:
 
 1. Keep the old thread active.
 2. Report the failure briefly.
@@ -273,7 +278,9 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Reading another project because it looks related | Stay in current `cwd` unless user explicitly names another root |
 | Archiving immediately after writing `agent.md` | Archive only after new thread exists and user confirms |
 | Using `fork_thread` for convenience | Use only `create_thread`; otherwise provide manual prompt |
-| Saying `create_thread` is unavailable without checking thread tools | Run the exact `tool_search` query first, retry with the fallback query, and use precise wording about missing thread tools |
+| Saying `create_thread` is unavailable without checking thread tools | Run the exact `tool_search` query first, retry with the fallback query, inspect returned tool names, and use precise wording about missing tools versus missing `projectId` |
+| Saying the tool did not appear when `tool_search` returned `codex_app.create_thread` | Treat `create_thread` as available; if blocked, name the real blocker such as missing saved `projectId` |
+| Creating or editing `AGENTS.md` during cleanup | Read existing `AGENTS.md` as context only; ProjectCleanup writes `docs/codex/project-cleanup/agent.md` |
 | Saving all chat text | Save decisions and state, not transcript noise |
 | Ignoring size | Aim for 800-1500 words, but do not add filler |
 | Putting everything in memory | Propose only stable memory, then require approval |
