@@ -59,8 +59,6 @@ ProjectCleanup should not ask for a separate approval before running these expli
 - `/project-cleanup status`
 - `/project-cleanup refresh`
 - `/project-cleanup now`
-- `/project-cleanup revisar`
-- `/project-cleanup agora`
 - `[$project-cleanup](...) check`
 - `[$project-cleanup](...) preview`
 - `[$project-cleanup](...) status`
