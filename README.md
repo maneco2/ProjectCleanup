@@ -38,7 +38,7 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 
 Use the canonical slash commands below. If the skill is selected from a chip/path such as `[$project-cleanup](...)`, append a known subcommand or choose one of these slash commands; the skill reference alone should not run the full cleanup flow or the next-thread init prompt.
 
-Explicit subcommands always win. `now` starts the handoff flow immediately; it does not mean "wait for another command".
+Explicit subcommands always win. `now` executes the full handoff flow immediately.
 
 | Command | Purpose |
 | --- | --- |
@@ -52,6 +52,8 @@ Explicit subcommands always win. `now` starts the handoff flow immediately; it d
 ## Check Scoring
 
 `heavy` is reserved for real impact: clear slowdown, repeated compactions, context loss, quality drops, forgotten decisions, or a handoff needed now.
+
+When the result is `heavy`, ProjectCleanup should say that analysis may take longer and use more context/tokens because the chat is large. That extra use is expected for careful diagnosis, synthesis, and validation; the final response should still stay concise.
 
 Long chats that still feel comfortable should be classified as `medium`, with `preview`, `status`, or `refresh` recommended before forcing a full new-thread handoff.
 
