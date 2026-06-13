@@ -1,0 +1,37 @@
+{
+  "name": "project-cleanup",
+  "version": "0.1.0",
+  "description": "Codex plugin for clean project handoffs and new-thread continuity.",
+  "author": {
+    "name": "Odair Devalier",
+    "url": "https://github.com/maneco2"
+  },
+  "homepage": "https://github.com/maneco2/ProjectCleanup",
+  "repository": "https://github.com/maneco2/ProjectCleanup",
+  "keywords": [
+    "codex",
+    "skill",
+    "handoff",
+    "context",
+    "cleanup",
+    "thread"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ProjectCleanup",
+    "shortDescription": "Clean handoffs for long Codex chats.",
+    "longDescription": "ProjectCleanup prepares concise project handoffs, creates lightweight init prompts for new Codex threads, and preserves current-project boundaries so long chats can continue with less token load.",
+    "developerName": "Odair Devalier - L2JServer Junior Developer",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills"
+    ],
+    "websiteURL": "https://github.com/maneco2/ProjectCleanup",
+    "defaultPrompt": [
+      "/project-cleanup",
+      "Prepare a clean handoff for this project chat.",
+      "Refresh the ProjectCleanup agent.md for this project."
+    ],
+    "brandColor": "#2F855A"
+  }
+}
