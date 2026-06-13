@@ -28,7 +28,7 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 | Agent validation | Checks required sections, word count, and common secret patterns. |
 | Size target | Keeps `agent.md` around 800-1500 words when practical. |
 | Language settings | Separates user response language from operational prompt language. |
-| Thread tool discovery | Runs exact and fallback searches for thread tools before using the manual prompt fallback. |
+| Thread tool discovery | Calls exact and fallback `tool_search` queries, then distinguishes missing tools from missing target data. |
 | Memory candidate flow | Suggests memory notes but never saves them without approval. |
 | New-thread `/init` prompt | Starts the next thread with a short, focused prompt. |
 | Manual approval gates | Asks before creating a new thread and asks separately before archiving the old one. |
@@ -78,6 +78,8 @@ create_thread set_thread_archived list_threads Codex thread tools
 ```
 
 If that does not expose `create_thread`, it retries with a broader fallback search. Only after both searches fail should it report that the current session does not expose thread tools.
+
+If `tool_search` returns `codex_app.create_thread`, the tool is available. ProjectCleanup must not say the tool did not appear. If automatic creation is still blocked because the session does not expose the saved `projectId` required for a project thread, it should say that precisely and keep the manual prompt as fallback.
 
 ## Handoff Quality
 
@@ -160,8 +162,9 @@ MIT License. See `LICENSE`.
 - Never save secrets, credentials, tokens, or long private dumps.
 - Never use `fork_thread` as fallback.
 - Never say `create_thread` is unavailable without first checking thread tools with exact and fallback `tool_search` queries.
+- Never say the tool did not appear when `tool_search` returned `codex_app.create_thread`; report missing `projectId` or the real blocker instead.
 - Never archive the old thread before the new thread exists and the user confirms.
-- Do not edit the project's `AGENTS.md` by default.
+- Do not create or edit the project's `AGENTS.md`; read an existing file as input only.
 - Treat memory as a candidate note until the user explicitly approves saving it.
 
 ## Credits
