@@ -1,6 +1,6 @@
 {
   "name": "project-cleanup",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Codex plugin for clean project handoffs and new-thread continuity.",
   "author": {
     "name": "Odair Devalier",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "ProjectCleanup",
     "shortDescription": "Clean handoffs for long Codex chats.",
-    "longDescription": "ProjectCleanup prepares concise project handoffs, offers performance checkpoints for heavy chats, creates lightweight init prompts for new Codex threads, and preserves current-project boundaries so long chats can continue with less token load.",
+    "longDescription": "ProjectCleanup prepares validated project handoffs, offers performance checkpoints for heavy chats, creates lightweight init prompts for new Codex threads, and preserves current-project boundaries so long chats can continue with less token load.",
     "developerName": "Odair Devalier - L2JServer Junior Developer",
     "category": "Productivity",
     "capabilities": [
@@ -30,6 +30,8 @@
     "defaultPrompt": [
       "/project-cleanup",
       "/project-cleanup check",
+      "/project-cleanup preview",
+      "/project-cleanup status",
       "/project-cleanup revisar"
     ],
     "brandColor": "#2F855A"
