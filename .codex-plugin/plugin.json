@@ -32,7 +32,8 @@
       "/project-cleanup check",
       "/project-cleanup preview",
       "/project-cleanup status",
-      "/project-cleanup refresh"
+      "/project-cleanup refresh",
+      "/project-cleanup now"
     ],
     "brandColor": "#2F855A"
   }
