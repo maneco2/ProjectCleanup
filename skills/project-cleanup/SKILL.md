@@ -22,6 +22,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - Do not use `fork_thread` as a fallback because it can carry old history.
 - Do not say `create_thread` is unavailable until both the exact and fallback thread-tool searches have been attempted and the returned tool names have been checked.
 - If `tool_search` exposes `codex_app.create_thread`, treat thread creation as available. Do not say the tool did not appear.
+- For `codex_app.create_thread`, `target.project.projectId` may be the current saved project id or the current workspace root path.
 - Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
@@ -68,12 +69,13 @@ Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora
 10. Before any manual new-thread fallback, actually call `tool_search.tool_search_tool`; do not just reason from the visible tools list. First search exactly for `create_thread set_thread_archived list_threads Codex thread tools`. If that does not expose `create_thread`, run a second fallback search for `Codex thread create archive tools create_thread set_thread_archived`.
 11. Inspect the returned tool names. If the result includes `codex_app.create_thread`, `create_thread` is available. Do not write "the tool did not appear" or similar. If the result includes `codex_app.set_thread_archived`, archival is available too.
 12. If both searches fail to expose `create_thread`, say precisely: `This session does not expose Codex thread creation tools after tool_search.` Then provide the manual prompt and do not archive anything.
-13. If `codex_app.create_thread` is available, prepare a call to it instead of falling back manually. Use a project target only when the current saved `projectId` is exposed by the app context or a tool result. Do not guess `projectId`, and do not substitute the thread id or cwd for it.
-14. If `create_thread` is available but no saved `projectId` is exposed, say precisely: `create_thread is available, but this session did not expose the saved projectId needed for an automatic project thread.` Provide the manual prompt and keep the old thread active. Do not claim the tool is missing.
-15. Do not use a `projectless` `create_thread` target for a project handoff unless the user explicitly approves that tradeoff after being told it may not attach to the active saved project/root.
-16. Ask for confirmation before calling `create_thread` when the required target data is available, then create the new thread with title `<current title> NEW` when titles are supported, using the init prompt from `agent.md`.
-17. If `create_thread` fails, retry once. If it fails again, report the concrete failure, provide the manual prompt, and do not archive anything.
-18. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
+13. If `codex_app.create_thread` is available, prepare a call to it instead of falling back manually. Use `target: { type: "project", projectId: <current workspace root>, environment: { type: "local" } }` when the current workspace root is a saved Codex project. The schema accepts a saved project id or workspace root path here.
+14. Do not pass the thread id as `projectId`. If the handoff's active path is a subdirectory inside the saved project, still use the saved workspace root as `projectId` and put the exact subdirectory in the init prompt's `Projeto ativo`.
+15. If the workspace root is unclear, call `list_threads` to inspect the current/recent thread `cwd`, or use the environment `cwd` when it is the saved project root. If this is still ambiguous, say precisely: `create_thread is available, but this session did not expose a clear saved project root for an automatic project thread.` Provide the manual prompt and keep the old thread active.
+16. Do not use a `projectless` `create_thread` target for a project handoff unless the user explicitly approves that tradeoff after being told it may not attach to the active saved project/root.
+17. Ask for confirmation before calling `create_thread` when the required target data is available, then create the new thread with the init prompt from `agent.md`. If supported, rename it to `<current title> NEW` with `set_thread_title` after creation.
+18. If `create_thread` fails because the workspace root was rejected, retry once with the best confirmed saved project root. If it fails again, report the concrete failure, provide the manual prompt, and do not archive anything.
+19. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
 
 ## Check Mode
 
@@ -250,7 +252,7 @@ Do not save memory automatically.
 
 ## Fallback
 
-If thread tools are unavailable after both `tool_search` queries, if `create_thread` is available but required target data such as `projectId` is not exposed, or if `create_thread` fails twice:
+If thread tools are unavailable after both `tool_search` queries, if `create_thread` is available but the saved workspace root cannot be determined, or if `create_thread` fails twice:
 
 1. Keep the old thread active.
 2. Report the failure briefly.
@@ -278,8 +280,9 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Reading another project because it looks related | Stay in current `cwd` unless user explicitly names another root |
 | Archiving immediately after writing `agent.md` | Archive only after new thread exists and user confirms |
 | Using `fork_thread` for convenience | Use only `create_thread`; otherwise provide manual prompt |
-| Saying `create_thread` is unavailable without checking thread tools | Run the exact `tool_search` query first, retry with the fallback query, inspect returned tool names, and use precise wording about missing tools versus missing `projectId` |
-| Saying the tool did not appear when `tool_search` returned `codex_app.create_thread` | Treat `create_thread` as available; if blocked, name the real blocker such as missing saved `projectId` |
+| Saying `create_thread` is unavailable without checking thread tools | Run the exact `tool_search` query first, retry with the fallback query, inspect returned tool names, and use precise wording about missing tools versus missing workspace root |
+| Saying the tool did not appear when `tool_search` returned `codex_app.create_thread` | Treat `create_thread` as available; if blocked, name the real blocker such as unclear saved workspace root |
+| Refusing to use the current workspace root as `projectId` | Use the saved workspace root path for `target.project.projectId`; the schema allows saved project id or workspace root |
 | Creating or editing `AGENTS.md` during cleanup | Read existing `AGENTS.md` as context only; ProjectCleanup writes `docs/codex/project-cleanup/agent.md` |
 | Saving all chat text | Save decisions and state, not transcript noise |
 | Ignoring size | Aim for 800-1500 words, but do not add filler |
