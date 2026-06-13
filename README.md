@@ -4,7 +4,7 @@
 
 ![Codex Skill](https://img.shields.io/badge/Codex-Skill-58A6FF)
 ![Plugin Ready](https://img.shields.io/badge/Plugin-Ready-2F855A)
-![Version](https://img.shields.io/badge/version-0.2.0-2F855A)
+![Version](https://img.shields.io/badge/version-0.2.1-2F855A)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 
 ProjectCleanup helps when a Codex project chat gets long, slow, repeatedly compacted, or hard to continue. It preserves the important context, removes conversation noise, and prepares a concise `agent.md` handoff for the current project only.
@@ -22,7 +22,7 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 | Clean handoff generation | Creates `docs/codex/project-cleanup/agent.md` for the current project. |
 | Current-project boundary | Uses only the current chat and current project context. |
 | Performance checkpoint | Offers cleanup when the chat feels heavy or context loss is likely. |
-| Check scoring | Classifies a chat as `light`, `medium`, or `heavy`. |
+| Comfort-aware check scoring | Classifies a chat as `light`, `medium`, or `heavy` without treating length alone as heavy. |
 | Preview mode | Drafts the handoff without writing files or creating threads. |
 | Status mode | Reports whether `agent.md` exists, its size, age, and freshness. |
 | Agent validation | Checks required sections, word count, and common secret patterns. |
@@ -41,8 +41,14 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 | `/project-cleanup check` | Diagnose whether the current chat feels light, medium, or heavy. No files or threads are changed. |
 | `/project-cleanup preview` | Draft the proposed `agent.md` in chat only. |
 | `/project-cleanup status` | Report whether `agent.md` exists and whether it looks fresh or stale. |
-| `/project-cleanup revisar` | Refresh the current project's `agent.md` without creating a new thread. |
-| `/project-cleanup agora` | Run the full handoff flow with validation and confirmation gates. |
+| `/project-cleanup refresh` | Refresh the current project's `agent.md` without creating a new thread. |
+| `/project-cleanup now` | Run the full handoff flow with validation and confirmation gates. |
+
+## Check Scoring
+
+`heavy` is reserved for real impact: clear slowdown, repeated compactions, context loss, quality drops, forgotten decisions, or a handoff needed now.
+
+Long chats that still feel comfortable should be classified as `medium`, with `preview`, `status`, or `refresh` recommended before forcing a full new-thread handoff.
 
 ## Performance Checkpoint
 
