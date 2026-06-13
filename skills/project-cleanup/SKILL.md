@@ -26,7 +26,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - A new thread counts as created only when the current `/project-cleanup now` run successfully calls `create_thread` and receives a `threadId` or `pendingWorktreeId`.
 - Treat ProjectCleanup as a global installed skill: the same `/project-cleanup` commands apply in every project chat where this skill is available. Do not require per-project activation beyond the installed skill being loaded by Codex.
 - Distinguish global command availability from session tool availability: `/project-cleanup now` can run in any loaded skill session, but automatic new-thread creation still depends on that session exposing `codex_app.create_thread`.
-- Treat explicit subcommands as authoritative: `/project-cleanup`, `/project-cleanup check`, `/project-cleanup preview`, `/project-cleanup status`, `/project-cleanup refresh`, `/project-cleanup now`, legacy aliases, and chip/path forms with those suffixes must continue immediately without waiting for a separate `Sim`.
+- Treat explicit subcommands as authoritative: `/project-cleanup`, `/project-cleanup check`, `/project-cleanup preview`, `/project-cleanup status`, `/project-cleanup refresh`, `/project-cleanup now`, and chip/path forms with those suffixes must continue immediately without waiting for a separate `Sim`.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
 
@@ -57,8 +57,6 @@ Subcommands:
 | `/project-cleanup refresh` | Review and refresh the current project's existing `agent.md` immediately. State the active project path, but do not ask for a separate confirmation unless the root is ambiguous or conflicting. Do not create a new thread. |
 | `/project-cleanup now` | Run the full approved handoff flow immediately: state the project path, generate `agent.md`, validate it, prepare the next-thread init prompt, create the new thread when `create_thread` is exposed, then ask separately before archival. |
 
-Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora` should be treated as equivalent to `/project-cleanup refresh` and `/project-cleanup now` for old handoffs, with the same terminal behavior, but new docs and recommendations should use the English commands.
-
 ## Approval Policy
 
 Do not ask for a separate `Sim` or approval before executing these explicit commands:
@@ -69,8 +67,6 @@ Do not ask for a separate `Sim` or approval before executing these explicit comm
 - `/project-cleanup status`
 - `/project-cleanup refresh`
 - `/project-cleanup now`
-- `/project-cleanup revisar`
-- `/project-cleanup agora`
 - `[$project-cleanup](...) check`
 - `[$project-cleanup](...) preview`
 - `[$project-cleanup](...) status`
@@ -124,7 +120,7 @@ For `/project-cleanup check`, classify the current chat:
 
 Classify as `medium`, not `heavy`, when the chat is long but still feels comfortable and the user reports no real loss of quality.
 
-When the result is `heavy`, notify the user that the cleanup may take longer and may use more context/tokens because an extended chat requires more careful reading and synthesis. This extra token use is acceptable for diagnosing, summarizing, and validating the handoff, but the final answer should remain concise.
+When the result is `heavy`, notify the user that the cleanup may take longer and may use more context/tokens because an extended chat requires more careful reading and synthesis. This extra token use is acceptable for diagnosing, summarizing, and validating the handoff, but the final response should remain concise.
 
 Use this output shape:
 
