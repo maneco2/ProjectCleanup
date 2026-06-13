@@ -1,4 +1,4 @@
 interface:
   display_name: "ProjectCleanup"
   short_description: "Validate clean handoffs for long chats"
-  default_prompt: "Use /project-cleanup check, preview, status, refresh, or now for the current project."
+  default_prompt: "Use /project-cleanup check, preview, status, refresh, or now for the current project. Explicit subcommands take priority, and now means execute the full flow immediately."
