@@ -36,7 +36,9 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 
 ## Commands
 
-Use the canonical slash commands below. If the skill is selected from a chip/path such as `[$project-cleanup](...)`, append a known subcommand or choose one of these slash commands; the skill reference alone should not run the full cleanup flow.
+Use the canonical slash commands below. If the skill is selected from a chip/path such as `[$project-cleanup](...)`, append a known subcommand or choose one of these slash commands; the skill reference alone should not run the full cleanup flow or the next-thread init prompt.
+
+Explicit subcommands always win. `now` starts the handoff flow immediately; it does not mean "wait for another command".
 
 | Command | Purpose |
 | --- | --- |
@@ -45,7 +47,7 @@ Use the canonical slash commands below. If the skill is selected from a chip/pat
 | `/project-cleanup preview` | Draft the proposed `agent.md` in chat only. |
 | `/project-cleanup status` | Report whether `agent.md` exists and whether it looks fresh or stale. |
 | `/project-cleanup refresh` | Refresh the current project's `agent.md` without creating a new thread. |
-| `/project-cleanup now` | Run the full handoff flow with validation and confirmation gates. |
+| `/project-cleanup now` | Run the full handoff flow immediately with validation and confirmation gates. |
 
 ## Check Scoring
 
@@ -81,16 +83,6 @@ This chat appears heavy or at risk of context loss. Would you like to create a h
 - Validation checklist.
 
 Target size: **800-1500 words**. Shorter handoffs must still cover the operational state. Longer handoffs should be compressed before creating a new thread.
-
-## Safety Model
-
-- Never mix roots, chats, memories, or unrelated projects.
-- Never save secrets, credentials, tokens, or long private dumps.
-- Never use `fork_thread` as fallback.
-- Never say `create_thread` is unavailable without first checking thread tools with `tool_search`.
-- Never archive the old thread before the new thread exists and the user confirms.
-- Do not edit the project's `AGENTS.md` by default.
-- Treat memory as a candidate note until the user explicitly approves saving it.
 
 ## Validate agent.md
 
@@ -144,6 +136,16 @@ skills/project-cleanup/agents/openai.yaml
 skills/project-cleanup/references/agent-template.md
 skills/project-cleanup/scripts/validate_agent_md.py
 ```
+
+## Safety Model
+
+- Never mix roots, chats, memories, or unrelated projects.
+- Never save secrets, credentials, tokens, or long private dumps.
+- Never use `fork_thread` as fallback.
+- Never say `create_thread` is unavailable without first checking thread tools with `tool_search`.
+- Never archive the old thread before the new thread exists and the user confirms.
+- Do not edit the project's `AGENTS.md` by default.
+- Treat memory as a candidate note until the user explicitly approves saving it.
 
 ## Credits
 
