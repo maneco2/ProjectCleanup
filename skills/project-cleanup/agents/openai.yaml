@@ -1,0 +1,4 @@
+interface:
+  display_name: "ProjectCleanup"
+  short_description: "Prepare clean handoffs for long chats"
+  default_prompt: "Use $project-cleanup to prepare a clean handoff and new chat for the current project."
