@@ -32,7 +32,12 @@ Primary trigger:
 /project-cleanup
 ```
 
-Also use this skill for phrases like `ProjectCleanup`, "limpar este chat", "preparar novo chat limpo", "criar handoff deste projeto", or "este chat ficou lento".
+Command dispatch rules:
+
+- Execute actions only when the user gives the canonical slash command `/project-cleanup` or a clear subcommand such as `/project-cleanup check`, `/project-cleanup preview`, `/project-cleanup status`, `/project-cleanup refresh`, or `/project-cleanup now`.
+- If the user references the skill chip/path only, for example `[$project-cleanup](...)`, do not run the full cleanup flow automatically. Briefly list the valid commands and ask which one they want.
+- If the user references the skill chip/path plus a known subcommand, for example `[$project-cleanup](...) refresh`, treat it as the equivalent canonical command `/project-cleanup refresh` and execute only that subcommand.
+- Use natural-language triggers like `ProjectCleanup`, "limpar este chat", "preparar novo chat limpo", "criar handoff deste projeto", or "este chat ficou lento" to offer or route to the matching canonical command, not to silently run `/project-cleanup now`.
 
 Subcommands:
 
