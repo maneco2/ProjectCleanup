@@ -1,6 +1,6 @@
 ---
 name: project-cleanup
-description: Use when a Codex project chat is long, slow, repeatedly compacted, or needs a clean handoff into a new thread without mixing projects, roots, or unrelated conversation history.
+description: Use when a Codex project chat is long, slow, repeatedly compacted, or needs a clean handoff, performance checkpoint, review, or new thread without mixing projects, roots, or unrelated conversation history.
 ---
 
 # ProjectCleanup
@@ -33,6 +33,14 @@ Primary trigger:
 
 Also use this skill for phrases like `ProjectCleanup`, "limpar este chat", "preparar novo chat limpo", "criar handoff deste projeto", or "este chat ficou lento".
 
+Subcommands:
+
+| Command | Behavior |
+| --- | --- |
+| `/project-cleanup check` | Diagnose whether the current chat feels light, medium, or heavy. Do not write files, create threads, or archive anything. |
+| `/project-cleanup revisar` | Review and refresh the current project's existing `agent.md`. Ask before writing if the active project has not been confirmed in this turn. Do not create a new thread. |
+| `/project-cleanup agora` | Run the full approved handoff flow: confirm project, generate `agent.md`, prepare init prompt, ask before `create_thread`, then ask separately before archival. |
+
 ## Workflow
 
 1. Identify the current thread title when available and the current `cwd`.
@@ -46,6 +54,26 @@ Also use this skill for phrases like `ProjectCleanup`, "limpar este chat", "prep
 9. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
 10. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
 11. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
+
+## Performance Checkpoint
+
+If the chat appears long, slow, repeatedly compacted, or the user mentions performance, context loss, token load, or sluggish responses, pause before continuing and offer ProjectCleanup.
+
+Use this prompt:
+
+```text
+O chat parece pesado ou com risco de perda de contexto. Deseja criar um handoff e iniciar uma nova thread limpa agora?
+
+1. Sim, preparar ProjectCleanup agora.
+2. Aguardar mais e continuar neste chat.
+3. Atualizar somente agent.md.
+```
+
+Respect the answer:
+
+- Option 1 maps to `/project-cleanup agora`.
+- Option 2 continues normally and does not ask again in the same turn.
+- Option 3 maps to `/project-cleanup revisar`.
 
 ## Output File
 
@@ -137,3 +165,4 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Using `fork_thread` for convenience | Use only `create_thread`; otherwise provide manual prompt |
 | Saving all chat text | Save decisions and state, not transcript noise |
 | Putting everything in memory | Propose only stable memory, then wait for approval |
+| Continuing silently when the user reports slowness | Offer the Performance Checkpoint prompt before doing more work |
