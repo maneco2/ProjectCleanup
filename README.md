@@ -1,59 +1,39 @@
 # ProjectCleanup
 
-Codex skill/plugin for clean project handoffs and new-thread continuity.
+> A Codex skill for turning long, slow project chats into clean handoffs and fast new-thread continuity.
 
-Created by Odair Devalier - L2JServer Junior Developer.
+![Codex Skill](https://img.shields.io/badge/Codex-Skill-58A6FF)
+![Plugin Ready](https://img.shields.io/badge/Plugin-Ready-2F855A)
+![Version](https://img.shields.io/badge/version-0.1.1-2F855A)
+![Status](https://img.shields.io/badge/status-active-brightgreen)
 
-## What It Does
+ProjectCleanup helps when a Codex project chat gets long, slow, repeatedly compacted, or hard to continue. It preserves the important context, removes conversation noise, and prepares a concise `agent.md` handoff for the current project only.
 
-ProjectCleanup helps when a Codex project chat gets long, slow, repeatedly compacted, or hard to continue. It prepares a concise `agent.md` handoff for the current project only, then guides creation of a new clean thread with a short `/init` prompt.
+Created by **Odair Devalier - L2JServer Junior Developer**.
 
-It can also offer a performance checkpoint when a chat appears heavy or the user reports slowness.
+## Why It Exists
 
-Core rules:
+Long Codex chats can become slow, noisy, repeatedly compacted, and risky to continue. ProjectCleanup gives you a controlled way to move from a heavy thread into a clean thread without losing decisions, commands, risks, or next steps.
 
-- Use only the current chat and current project.
-- Never mix unrelated roots, projects, old chats, or memories.
-- Do not edit `AGENTS.md` by default.
-- Do not use `fork_thread` as fallback.
-- Archive the old thread only after the new thread exists and the user confirms.
-- Do not save secrets, credentials, tokens, or long private dumps.
+## Features
 
-## Main Command
+| Feature | Purpose |
+| --- | --- |
+| Clean handoff generation | Creates a concise `docs/codex/project-cleanup/agent.md` for the current project. |
+| Current-project boundary | Uses only the current chat and current project context. |
+| Performance checkpoint | Offers cleanup when the chat feels heavy or context loss is likely. |
+| New-thread `/init` prompt | Starts the next thread with a short, focused prompt. |
+| Manual approval gates | Asks before creating a new thread and asks separately before archiving the old one. |
+| Secret-safe rules | Avoids passwords, tokens, credentials, private keys, cookies, and long private dumps. |
 
-```text
-/project-cleanup
-```
+## Commands
 
-Other useful prompts:
-
-```text
-ProjectCleanup
-limpar este chat
-preparar novo chat limpo
-criar handoff deste projeto
-este chat ficou lento
-```
-
-## Subcommands
-
-```text
-/project-cleanup check
-```
-
-Diagnoses whether the current chat feels light, medium, or heavy. It does not write files, create threads, or archive anything.
-
-```text
-/project-cleanup revisar
-```
-
-Refreshes the current project's existing `docs/codex/project-cleanup/agent.md` without creating a new thread.
-
-```text
-/project-cleanup agora
-```
-
-Runs the full handoff flow: confirm project, generate `agent.md`, prepare `/init`, ask before creating the new thread, then ask separately before archiving the old one.
+| Command | Purpose |
+| --- | --- |
+| `/project-cleanup` | Start the guided cleanup flow. |
+| `/project-cleanup check` | Diagnose whether the current chat feels light, medium, or heavy. No files or threads are changed. |
+| `/project-cleanup revisar` | Refresh the current project's `agent.md` without creating a new thread. |
+| `/project-cleanup agora` | Run the full handoff flow with confirmation gates. |
 
 ## Performance Checkpoint
 
@@ -76,7 +56,7 @@ repo: maneco2/ProjectCleanup
 path: skills/project-cleanup
 ```
 
-After installing, restart Codex so the skill is picked up.
+Restart Codex after installing so the skill is picked up.
 
 ## Install Manually
 
@@ -100,13 +80,23 @@ C:\Users\<your-user>\.codex\skills\project-cleanup
 
 Restart Codex after copying.
 
-## Plugin Layout
-
-This repository also includes a Codex plugin manifest:
+## Repository Layout
 
 ```text
 .codex-plugin/plugin.json
-skills/project-cleanup/
+skills/project-cleanup/SKILL.md
+skills/project-cleanup/agents/openai.yaml
+skills/project-cleanup/references/agent-template.md
 ```
 
-The skill remains the primary reusable component. The plugin manifest exists so this repository can evolve into a marketplace/plugin package later.
+## Safety Model
+
+- Never mix roots, chats, memories, or unrelated projects.
+- Never save secrets, credentials, tokens, or long private dumps.
+- Never use `fork_thread` as fallback.
+- Never archive the old thread before the new thread exists and the user confirms.
+- Do not edit the project's `AGENTS.md` by default.
+
+## Credits
+
+Created by **Odair Devalier - L2JServer Junior Developer**.
