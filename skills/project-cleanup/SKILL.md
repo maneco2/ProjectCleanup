@@ -40,8 +40,10 @@ Subcommands:
 | `/project-cleanup check` | Diagnose whether the current chat feels light, medium, or heavy. Do not write files, create threads, or archive anything. |
 | `/project-cleanup preview` | Draft the proposed `agent.md` in chat only. Do not write files, create threads, or archive anything. |
 | `/project-cleanup status` | Report whether `docs/codex/project-cleanup/agent.md` exists, its approximate word count, age, and likely freshness. Do not modify anything. |
-| `/project-cleanup revisar` | Review and refresh the current project's existing `agent.md`. Ask before writing if the active project has not been confirmed in this turn. Do not create a new thread. |
-| `/project-cleanup agora` | Run the full approved handoff flow: confirm project, generate `agent.md`, validate it, prepare init prompt, ask before `create_thread`, then ask separately before archival. |
+| `/project-cleanup refresh` | Review and refresh the current project's existing `agent.md`. Ask before writing if the active project has not been confirmed in this turn. Do not create a new thread. |
+| `/project-cleanup now` | Run the full approved handoff flow: confirm project, generate `agent.md`, validate it, prepare init prompt, ask before `create_thread`, then ask separately before archival. |
+
+Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora` should be treated as equivalent to `/project-cleanup refresh` and `/project-cleanup now` for old handoffs, but new docs and recommendations should use the English commands.
 
 ## Workflow
 
@@ -51,7 +53,7 @@ Subcommands:
 4. Generate a structured handoff using `references/agent-template.md`.
 5. Apply the quality gates: required sections, target size, current-project boundary, no secrets, validated commands, risks, and concrete next actions.
 6. For `/project-cleanup preview`, show the proposed handoff in chat and stop without writing.
-7. For `/project-cleanup revisar` or `/project-cleanup agora`, generate or replace `docs/codex/project-cleanup/agent.md`.
+7. For `/project-cleanup refresh` or `/project-cleanup now`, generate or replace `docs/codex/project-cleanup/agent.md`.
 8. Validate `agent.md` with `scripts/validate_agent_md.py` when Python is available; otherwise perform the manual checklist in this skill.
 9. Show the user a short handoff summary, validation result, and the exact init prompt for the next thread.
 10. Ask for confirmation before calling `create_thread`.
@@ -65,9 +67,11 @@ For `/project-cleanup check`, classify the current chat:
 
 | Level | Signals | Recommendation |
 | --- | --- | --- |
-| `light` | Short chat, stable context, no repeated compacting, fast responses | Continue normally. |
-| `medium` | Some accumulated decisions, noticeable token load, several files or commands discussed | Offer `/project-cleanup preview` or `/project-cleanup revisar`. |
-| `heavy` | Slow responses, repeated compaction, user mentions context loss, many decisions, long logs, or high risk of forgetting state | Recommend `/project-cleanup agora`. |
+| `light` | Short chat, few decisions, no context risk, fast responses | Continue normally. |
+| `medium` | Long chat, one compaction, many decisions or files discussed, but still comfortable to continue and no clear context loss | Offer `/project-cleanup preview`, `/project-cleanup status`, or `/project-cleanup refresh`. |
+| `heavy` | Clear slowdown, repeated compactions, user or agent notices context loss, quality drops, decisions are being forgotten, or handoff is needed now | Recommend `/project-cleanup now`. |
+
+Classify as `medium`, not `heavy`, when the chat is long but still feels comfortable and the user reports no real loss of quality.
 
 Use this output shape:
 
@@ -75,7 +79,7 @@ Use this output shape:
 ProjectCleanup check
 - Status: light | medium | heavy
 - Why: <short evidence>
-- Recommendation: <continue | preview | revisar | agora>
+- Recommendation: <continue | preview | refresh | now>
 - No files changed.
 ```
 
@@ -95,9 +99,9 @@ This chat appears heavy or at risk of context loss. Would you like to create a h
 
 Respect the answer:
 
-- Option 1 maps to `/project-cleanup agora`.
+- Option 1 maps to `/project-cleanup now`.
 - Option 2 continues normally and does not ask again in the same turn.
-- Option 3 maps to `/project-cleanup revisar`.
+- Option 3 maps to `/project-cleanup refresh`.
 
 ## Output File
 
@@ -169,7 +173,7 @@ For `/project-cleanup status`, inspect only the current project and report:
 - Approximate word count.
 - Last modified time when available.
 - Whether it appears fresh, stale, or missing.
-- Recommended next command: `preview`, `revisar`, or `agora`.
+- Recommended next command: `preview`, `refresh`, or `now`.
 
 Do not write files in status mode.
 
