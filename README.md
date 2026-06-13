@@ -28,7 +28,7 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 | Agent validation | Checks required sections, word count, and common secret patterns. |
 | Size target | Keeps `agent.md` around 800-1500 words when practical. |
 | Language settings | Separates user response language from operational prompt language. |
-| Thread tool discovery | Checks for thread tools before concluding `create_thread` is unavailable. |
+| Thread tool discovery | Runs exact and fallback searches for thread tools before using the manual prompt fallback. |
 | Memory candidate flow | Suggests memory notes but never saves them without approval. |
 | New-thread `/init` prompt | Starts the next thread with a short, focused prompt. |
 | Manual approval gates | Asks before creating a new thread and asks separately before archiving the old one. |
@@ -68,6 +68,16 @@ This chat appears heavy or at risk of context loss. Would you like to create a h
 2. Wait and continue in this chat.
 3. Update agent.md only.
 ```
+
+## Thread Tool Discovery
+
+Before falling back to the manual init prompt, ProjectCleanup searches for thread tools with:
+
+```text
+create_thread set_thread_archived list_threads Codex thread tools
+```
+
+If that does not expose `create_thread`, it retries with a broader fallback search. Only after both searches fail should it report that the current session does not expose thread tools.
 
 ## Handoff Quality
 
@@ -144,7 +154,7 @@ skills/project-cleanup/scripts/validate_agent_md.py
 - Never mix roots, chats, memories, or unrelated projects.
 - Never save secrets, credentials, tokens, or long private dumps.
 - Never use `fork_thread` as fallback.
-- Never say `create_thread` is unavailable without first checking thread tools with `tool_search`.
+- Never say `create_thread` is unavailable without first checking thread tools with exact and fallback `tool_search` queries.
 - Never archive the old thread before the new thread exists and the user confirms.
 - Do not edit the project's `AGENTS.md` by default.
 - Treat memory as a candidate note until the user explicitly approves saving it.
