@@ -28,6 +28,7 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 | Agent validation | Checks required sections, word count, and common secret patterns. |
 | Size target | Keeps `agent.md` around 800-1500 words when practical. |
 | Language settings | Separates user response language from operational prompt language. |
+| Thread tool discovery | Checks for thread tools before concluding `create_thread` is unavailable. |
 | Memory candidate flow | Suggests memory notes but never saves them without approval. |
 | New-thread `/init` prompt | Starts the next thread with a short, focused prompt. |
 | Manual approval gates | Asks before creating a new thread and asks separately before archiving the old one. |
@@ -78,6 +79,16 @@ This chat appears heavy or at risk of context loss. Would you like to create a h
 - Validation checklist.
 
 Target size: **800-1500 words**. Shorter handoffs must still cover the operational state. Longer handoffs should be compressed before creating a new thread.
+
+## Safety Model
+
+- Never mix roots, chats, memories, or unrelated projects.
+- Never save secrets, credentials, tokens, or long private dumps.
+- Never use `fork_thread` as fallback.
+- Never say `create_thread` is unavailable without first checking thread tools with `tool_search`.
+- Never archive the old thread before the new thread exists and the user confirms.
+- Do not edit the project's `AGENTS.md` by default.
+- Treat memory as a candidate note until the user explicitly approves saving it.
 
 ## Validate agent.md
 
@@ -131,15 +142,6 @@ skills/project-cleanup/agents/openai.yaml
 skills/project-cleanup/references/agent-template.md
 skills/project-cleanup/scripts/validate_agent_md.py
 ```
-
-## Safety Model
-
-- Never mix roots, chats, memories, or unrelated projects.
-- Never save secrets, credentials, tokens, or long private dumps.
-- Never use `fork_thread` as fallback.
-- Never archive the old thread before the new thread exists and the user confirms.
-- Do not edit the project's `AGENTS.md` by default.
-- Treat memory as a candidate note until the user explicitly approves saving it.
 
 ## Credits
 
