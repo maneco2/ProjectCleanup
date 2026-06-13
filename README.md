@@ -36,6 +36,8 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 
 ## Commands
 
+Use the canonical slash commands below. If the skill is selected from a chip/path such as `[$project-cleanup](...)`, append a known subcommand or choose one of these slash commands; the skill reference alone should not run the full cleanup flow.
+
 | Command | Purpose |
 | --- | --- |
 | `/project-cleanup` | Start the guided cleanup flow. |
