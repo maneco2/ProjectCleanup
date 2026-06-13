@@ -27,7 +27,7 @@ Regras iniciais:
 Primeira resposta esperada no novo chat:
 - Contexto carregado para <current cwd>.
 - Projeto ativo confirmado.
-- Aguardando o proximo comando do novo chat.
+- Handoff carregado para continuar deste ponto.
 ```
 
 ## Project Scope
