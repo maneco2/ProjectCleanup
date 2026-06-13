@@ -21,7 +21,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - Do not edit the project's `AGENTS.md` by default.
 - Do not use `fork_thread` as a fallback because it can carry old history.
 - Do not say `create_thread` is unavailable until a thread-tool search has been attempted.
-- Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately and must not fall back to a generic "next command" prompt.
+- Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
 
@@ -49,7 +49,7 @@ Subcommands:
 | `/project-cleanup preview` | Draft the proposed `agent.md` in chat only. Do not write files, create threads, or archive anything. |
 | `/project-cleanup status` | Report whether `docs/codex/project-cleanup/agent.md` exists, its approximate word count, age, and likely freshness. Do not modify anything. |
 | `/project-cleanup refresh` | Review and refresh the current project's existing `agent.md`. Ask before writing if the active project has not been confirmed in this turn. Do not create a new thread. |
-| `/project-cleanup now` | Run the full approved handoff flow immediately: confirm project, generate `agent.md`, validate it, prepare the next-thread init prompt, ask before `create_thread`, then ask separately before archival. Do not stop with a generic "next command" prompt when `now` was requested. |
+| `/project-cleanup now` | Run the full approved handoff flow immediately: confirm project, generate `agent.md`, validate it, prepare the next-thread init prompt, ask before `create_thread`, then ask separately before archival. |
 
 Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora` should be treated as equivalent to `/project-cleanup refresh` and `/project-cleanup now` for old handoffs, with the same terminal behavior, but new docs and recommendations should use the English commands.
 
@@ -81,6 +81,8 @@ For `/project-cleanup check`, classify the current chat:
 
 Classify as `medium`, not `heavy`, when the chat is long but still feels comfortable and the user reports no real loss of quality.
 
+When the result is `heavy`, notify the user that the cleanup may take longer and may use more context/tokens because an extended chat requires more careful reading and synthesis. This extra token use is acceptable for diagnosing, summarizing, and validating the handoff, but the final answer should remain concise.
+
 Use this output shape:
 
 ```text
@@ -88,6 +90,7 @@ ProjectCleanup check
 - Status: light | medium | heavy
 - Why: <short evidence>
 - Recommendation: <continue | preview | refresh | now>
+- Note: <only for heavy: analysis may take longer and use more context/tokens because the chat is large>
 - No files changed.
 ```
 
@@ -181,7 +184,7 @@ For `/project-cleanup status`, inspect only the current project and report:
 - Approximate word count.
 - Last modified time when available.
 - Whether it appears fresh, stale, or missing.
-- Recommended next command: `preview`, `refresh`, or `now`.
+- Recommended action: `preview`, `refresh`, or `now`.
 
 Do not write files in status mode.
 
@@ -214,7 +217,7 @@ Regras iniciais:
 Primeira resposta esperada no novo chat:
 - Contexto carregado para <current cwd>.
 - Projeto ativo confirmado.
-- Aguardando o proximo comando do novo chat.
+- Handoff carregado para continuar deste ponto.
 ```
 
 ## Memory Policy
@@ -272,5 +275,5 @@ When the user asks to review or refresh ProjectCleanup, update the existing `age
 | Saying `create_thread` is unavailable without checking thread tools | Run `tool_search` first and use precise wording about missing thread tools |
 | Saving all chat text | Save decisions and state, not transcript noise |
 | Ignoring size | Aim for 800-1500 words, but do not add filler |
-| Putting everything in memory | Propose only stable memory, then wait for approval |
+| Putting everything in memory | Propose only stable memory, then require approval |
 | Continuing silently when the user reports slowness | Offer the Performance Checkpoint prompt before doing more work |
