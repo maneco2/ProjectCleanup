@@ -17,7 +17,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 
 - Work only from the current thread and current `cwd`/project.
 - Never merge context from other projects, roots, old chats, or memories unless the user explicitly asks.
-- Confirm the active project path before writing `agent.md`.
+- For explicit subcommands, do not pause just to ask for confirmation before writing `agent.md`; state the active project path and continue. Ask only if the project path is missing, ambiguous, outside the current workspace, or conflicts with the requested project.
 - Do not create or edit the project's `AGENTS.md`; read an existing `AGENTS.md` only as input context.
 - Do not use `fork_thread` as a fallback because it can carry old history.
 - Do not say `create_thread` is unavailable until both the exact and fallback thread-tool searches have been attempted and the returned tool names have been checked.
@@ -26,7 +26,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - A new thread counts as created only when the current `/project-cleanup now` run successfully calls `create_thread` and receives a `threadId` or `pendingWorktreeId`.
 - Treat ProjectCleanup as a global installed skill: the same `/project-cleanup` commands apply in every project chat where this skill is available. Do not require per-project activation beyond the installed skill being loaded by Codex.
 - Distinguish global command availability from session tool availability: `/project-cleanup now` can run in any loaded skill session, but automatic new-thread creation still depends on that session exposing `codex_app.create_thread`.
-- Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately.
+- Treat explicit subcommands as authoritative: `/project-cleanup`, `/project-cleanup check`, `/project-cleanup preview`, `/project-cleanup status`, `/project-cleanup refresh`, `/project-cleanup now`, legacy aliases, and chip/path forms with those suffixes must continue immediately without waiting for a separate `Sim`.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
 
@@ -54,10 +54,32 @@ Subcommands:
 | `/project-cleanup check` | Diagnose whether the current chat feels light, medium, or heavy. Do not write files, create threads, or archive anything. |
 | `/project-cleanup preview` | Draft the proposed `agent.md` in chat only. Do not write files, create threads, or archive anything. |
 | `/project-cleanup status` | Report whether `docs/codex/project-cleanup/agent.md` exists, its approximate word count, age, and likely freshness. Do not modify anything. |
-| `/project-cleanup refresh` | Review and refresh the current project's existing `agent.md`. Ask before writing if the active project has not been confirmed in this turn. Do not create a new thread. |
-| `/project-cleanup now` | Run the full approved handoff flow immediately: confirm project, generate `agent.md`, validate it, prepare the next-thread init prompt, ask before `create_thread`, then ask separately before archival. |
+| `/project-cleanup refresh` | Review and refresh the current project's existing `agent.md` immediately. State the active project path, but do not ask for a separate confirmation unless the root is ambiguous or conflicting. Do not create a new thread. |
+| `/project-cleanup now` | Run the full approved handoff flow immediately: state the project path, generate `agent.md`, validate it, prepare the next-thread init prompt, create the new thread when `create_thread` is exposed, then ask separately before archival. |
 
 Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora` should be treated as equivalent to `/project-cleanup refresh` and `/project-cleanup now` for old handoffs, with the same terminal behavior, but new docs and recommendations should use the English commands.
+
+## Approval Policy
+
+Do not ask for a separate `Sim` or approval before executing these explicit commands:
+
+- `/project-cleanup`
+- `/project-cleanup check`
+- `/project-cleanup preview`
+- `/project-cleanup status`
+- `/project-cleanup refresh`
+- `/project-cleanup now`
+- `/project-cleanup revisar`
+- `/project-cleanup agora`
+- `[$project-cleanup](...) check`
+- `[$project-cleanup](...) preview`
+- `[$project-cleanup](...) status`
+- `[$project-cleanup](...) refresh`
+- `[$project-cleanup](...) now`
+
+For these commands, state the active project path and proceed. Ask only if the active root is missing, ambiguous, outside the current workspace, or conflicts with the requested project.
+
+For `/project-cleanup now`, automatic thread creation is part of the command. If `codex_app.create_thread` is exposed and the project root is clear, call it without asking for another approval. Archiving the old thread remains a separate action and still requires explicit user confirmation after the new thread exists.
 
 ## Global Skill Behavior
 
@@ -70,7 +92,7 @@ If the skill is loaded but `codex_app.create_thread` is not exposed after `tool_
 ## Workflow
 
 1. Identify the current thread title when available and the current `cwd`.
-2. State the active project path and ask for confirmation before writing files.
+2. State the active project path. For explicit `/project-cleanup refresh` and `/project-cleanup now`, continue without asking for a separate write confirmation. Ask only if the path is missing, ambiguous, outside the current workspace, or conflicts with the requested project.
 3. Inspect only current-project sources needed to understand the handoff: existing `AGENTS.md`, project docs, recent plans, relevant logs, and the current conversation summary available in context. Do not create or modify `AGENTS.md`.
 4. Generate a structured handoff using `references/agent-template.md`.
 5. Apply the quality gates: required sections, target size, current-project boundary, no secrets, validated commands, risks, and concrete next actions.
@@ -85,7 +107,7 @@ If the skill is loaded but `codex_app.create_thread` is not exposed after `tool_
 14. Do not pass the thread id as `projectId`. If the handoff's active path is a subdirectory inside the saved project, still use the saved workspace root as `projectId` and put the exact subdirectory in the init prompt's `Projeto ativo`.
 15. If the workspace root is unclear, call `list_threads` to inspect the current/recent thread `cwd`, or use the environment `cwd` when it is the saved project root. If this is still ambiguous, say precisely: `create_thread is available, but this session did not expose a clear saved project root for an automatic project thread.` Provide the manual prompt and keep the old thread active.
 16. Do not use a `projectless` `create_thread` target for a project handoff unless the user explicitly approves that tradeoff after being told it may not attach to the active saved project/root.
-17. Ask for confirmation before calling `create_thread` when the required target data is available, then create the new thread with the init prompt from `agent.md`. If supported, rename it to `<current title> NEW` with `set_thread_title` after creation.
+17. When the required target data is available, call `create_thread` without asking for another approval because `/project-cleanup now` is the approval for new-thread creation. Create the new thread with the init prompt from `agent.md`. If supported, rename it to `<current title> NEW` with `set_thread_title` after creation.
 18. If `create_thread` fails because the workspace root was rejected, retry once with the best confirmed saved project root. If it fails again, report the concrete failure, provide the manual prompt, and do not archive anything.
 19. Report `New thread created` only if this run received a fresh `threadId` or `pendingWorktreeId` from `create_thread`. Existing sidebar threads, previous test threads, similarly named `NEW` threads, or manual prompts do not count.
 20. After the new thread is created, ask for separate confirmation before calling `set_thread_archived` on the old thread.
