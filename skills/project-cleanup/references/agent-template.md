@@ -2,6 +2,8 @@
 
 ## Init
 
+The prompt below is for the new thread only, after `create_thread` succeeds. Do not use it as the current-thread reply to `/project-cleanup now`.
+
 ```text
 /init
 
@@ -22,10 +24,10 @@ Regras iniciais:
 - Usar o agent.md como contexto principal.
 - Se faltar detalhe, pedir o minimo necessario.
 
-Primeira resposta esperada:
+Primeira resposta esperada no novo chat:
 - Contexto carregado para <current cwd>.
 - Projeto ativo confirmado.
-- Aguardando o proximo comando.
+- Aguardando o proximo comando do novo chat.
 ```
 
 ## Project Scope
