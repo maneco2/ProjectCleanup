@@ -21,6 +21,7 @@ Created by Odair Devalier - L2JServer Junior Developer.
 - Do not edit the project's `AGENTS.md` by default.
 - Do not use `fork_thread` as a fallback because it can carry old history.
 - Do not say `create_thread` is unavailable until a thread-tool search has been attempted.
+- Treat explicit subcommands as authoritative: `/project-cleanup now`, `/project-cleanup agora`, or `[$project-cleanup](...) now` must continue the full handoff flow immediately and must not fall back to a generic "next command" prompt.
 - Never archive the old thread before the new thread exists and the user confirms archival.
 - Never save secrets: passwords, tokens, API keys, private keys, CAPTCHA secrets, DB credentials, cookies, session data, or long private dumps.
 
@@ -37,6 +38,7 @@ Command dispatch rules:
 - Execute actions only when the user gives the canonical slash command `/project-cleanup` or a clear subcommand such as `/project-cleanup check`, `/project-cleanup preview`, `/project-cleanup status`, `/project-cleanup refresh`, or `/project-cleanup now`.
 - If the user references the skill chip/path only, for example `[$project-cleanup](...)`, do not run the full cleanup flow automatically. Briefly list the valid commands and ask which one they want.
 - If the user references the skill chip/path plus a known subcommand, for example `[$project-cleanup](...) refresh`, treat it as the equivalent canonical command `/project-cleanup refresh` and execute only that subcommand.
+- A bare chip/path reference never overrides an explicit appended subcommand.
 - Use natural-language triggers like `ProjectCleanup`, "limpar este chat", "preparar novo chat limpo", "criar handoff deste projeto", or "este chat ficou lento" to offer or route to the matching canonical command, not to silently run `/project-cleanup now`.
 
 Subcommands:
@@ -47,9 +49,9 @@ Subcommands:
 | `/project-cleanup preview` | Draft the proposed `agent.md` in chat only. Do not write files, create threads, or archive anything. |
 | `/project-cleanup status` | Report whether `docs/codex/project-cleanup/agent.md` exists, its approximate word count, age, and likely freshness. Do not modify anything. |
 | `/project-cleanup refresh` | Review and refresh the current project's existing `agent.md`. Ask before writing if the active project has not been confirmed in this turn. Do not create a new thread. |
-| `/project-cleanup now` | Run the full approved handoff flow: confirm project, generate `agent.md`, validate it, prepare init prompt, ask before `create_thread`, then ask separately before archival. |
+| `/project-cleanup now` | Run the full approved handoff flow immediately: confirm project, generate `agent.md`, validate it, prepare the next-thread init prompt, ask before `create_thread`, then ask separately before archival. Do not stop with a generic "next command" prompt when `now` was requested. |
 
-Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora` should be treated as equivalent to `/project-cleanup refresh` and `/project-cleanup now` for old handoffs, but new docs and recommendations should use the English commands.
+Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora` should be treated as equivalent to `/project-cleanup refresh` and `/project-cleanup now` for old handoffs, with the same terminal behavior, but new docs and recommendations should use the English commands.
 
 ## Workflow
 
@@ -61,7 +63,7 @@ Legacy Portuguese aliases `/project-cleanup revisar` and `/project-cleanup agora
 6. For `/project-cleanup preview`, show the proposed handoff in chat and stop without writing.
 7. For `/project-cleanup refresh` or `/project-cleanup now`, generate or replace `docs/codex/project-cleanup/agent.md`.
 8. Validate `agent.md` with `scripts/validate_agent_md.py` when Python is available; otherwise perform the manual checklist in this skill.
-9. Show the user a short handoff summary, validation result, and the exact init prompt for the next thread.
+9. Show the user a short handoff summary, validation result, and the exact init prompt for the next thread. Keep that prompt separate from the current-thread reply to `/project-cleanup now`.
 10. Before calling `create_thread`, use `tool_search` to look for thread tools in the current session. If the search does not expose them, say the session does not expose thread tools and provide the manual prompt instead of claiming `create_thread` is unavailable. Ask for confirmation before calling `create_thread`.
 11. Create the new thread with title `<current title> NEW` when the platform supports titles, using the init prompt from `agent.md`.
 12. If `create_thread` fails, retry once. If it fails again, provide the manual prompt and do not archive anything.
@@ -187,6 +189,8 @@ Do not write files in status mode.
 
 The prompt should stay short and point to the handoff file:
 
+The prompt below is for the new thread only, after `create_thread` succeeds. Do not use it as the current-thread reply to `/project-cleanup now`.
+
 ```text
 /init
 
@@ -207,10 +211,10 @@ Regras iniciais:
 - Usar o agent.md como contexto principal.
 - Se faltar detalhe, pedir o minimo necessario.
 
-Primeira resposta esperada:
+Primeira resposta esperada no novo chat:
 - Contexto carregado para <current cwd>.
 - Projeto ativo confirmado.
-- Aguardando o proximo comando.
+- Aguardando o proximo comando do novo chat.
 ```
 
 ## Memory Policy
