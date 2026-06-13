@@ -143,11 +143,16 @@ Restart Codex after copying.
 
 ```text
 .codex-plugin/plugin.json
+LICENSE
 skills/project-cleanup/SKILL.md
 skills/project-cleanup/agents/openai.yaml
 skills/project-cleanup/references/agent-template.md
 skills/project-cleanup/scripts/validate_agent_md.py
 ```
+
+## License
+
+MIT License. See `LICENSE`.
 
 ## Safety Model
 
