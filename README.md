@@ -201,7 +201,3 @@ MIT License. See `LICENSE`.
 - Never archive the old thread before the new thread exists and the user confirms.
 - Do not create or edit the project's `AGENTS.md`; read an existing file as input only.
 - Treat memory as a candidate note until the user explicitly approves saving it.
-
-## Credits
-
-Created by **Odair Devalier - L2JServer Junior Developer**.
