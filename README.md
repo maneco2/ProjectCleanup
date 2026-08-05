@@ -22,6 +22,7 @@ Long Codex chats can become slow, noisy, repeatedly compacted, and risky to cont
 | Clean handoff generation | Creates `docs/codex/project-cleanup/agent.md` for the current project. |
 | Current-project boundary | Uses only the current chat and current project context. |
 | Performance checkpoint | Offers cleanup when the chat feels heavy or context loss is likely. |
+| Automatic checkpoints | With the plugin hook trusted, shows color-coded Windows popups and Codex UI warnings at 3, 5, 10, and every compaction after 10. |
 | Comfort-aware check scoring | Classifies a chat as `light`, `medium`, or `heavy` without treating length alone as heavy. |
 | Preview mode | Drafts the handoff without writing files or creating threads. |
 | Status mode | Reports whether `agent.md` exists, its size, age, and freshness. |
@@ -85,6 +86,25 @@ C:\Users\<your-user>\.codex\skills\project-cleanup
 
 `heavy` is reserved for real impact: clear slowdown, repeated compactions, context loss, quality drops, forgotten decisions, or a handoff needed now.
 
+Use this escalation ladder when the compaction count is visible in the chat history:
+
+- 3+ compactions: classify as `light`, suggest `/project-cleanup check`, and let the user answer yes/no if they want to keep going.
+- 5+ compactions: classify as `medium` and show the Performance Checkpoint prompt.
+- 10+ compactions: classify as `heavy` and recommend `/project-cleanup now` strongly after every additional compaction.
+
+Automatic checkpoint warnings require the complete plugin installation and approval
+of its bundled `PostCompact` hook. Installing only the skill does not provide a
+background monitor. Codex asks you to review changed hooks before they can run.
+
+On Windows, the checkpoint opens a large color-coded action window without a visible
+PowerShell console. It shows the current compaction count, the `light`/`medium`/`heavy`
+progression, and descriptions for each ProjectCleanup action. Action buttons copy the
+canonical command to the clipboard; they do not submit it automatically. Use **Open
+Current Chat**, then paste and send the copied command in Codex.
+
+The **All Commands** tab lists every canonical command, its purpose, and a dedicated
+copy button, so the complete command reference remains available inside the popup.
+
 When the result is `heavy`, ProjectCleanup should say that analysis may take longer and use more context/tokens because the chat is large. That extra use is expected for careful diagnosis, synthesis, and validation; the final response should still stay concise.
 
 Long chats that still feel comfortable should be classified as `medium`, with `preview`, `status`, or `refresh` recommended before forcing a full new-thread handoff.
@@ -100,6 +120,12 @@ This chat appears heavy or at risk of context loss. Would you like to create a h
 2. Wait and continue in this chat.
 3. Update agent.md only.
 ```
+
+Accept terse replies as shortcuts:
+
+- `yes` or `1` -> `/project-cleanup now`
+- `no` or `2` -> continue in this chat
+- `refresh`, `later`, or `3` -> `/project-cleanup refresh`
 
 ## Thread Tool Discovery
 

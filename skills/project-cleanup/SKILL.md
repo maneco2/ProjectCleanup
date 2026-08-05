@@ -114,13 +114,25 @@ For `/project-cleanup check`, classify the current chat:
 
 | Level | Signals | Recommendation |
 | --- | --- | --- |
-| `light` | Short chat, few decisions, no context risk, fast responses | Continue normally. |
-| `medium` | Long chat, one compaction, many decisions or files discussed, but still comfortable to continue and no clear context loss | Offer `/project-cleanup preview`, `/project-cleanup status`, or `/project-cleanup refresh`. |
-| `heavy` | Clear slowdown, repeated compactions, user or agent notices context loss, quality drops, decisions are being forgotten, or handoff is needed now | Recommend `/project-cleanup now`. |
+| `light` | Short chat, few decisions, no context risk, fast responses, or 3+ compactions without quality loss | Continue normally or suggest `/project-cleanup check`. |
+| `medium` | Long chat, 5+ compactions, many decisions or files discussed, but still comfortable to continue and no clear context loss | Offer `/project-cleanup preview`, `/project-cleanup status`, or `/project-cleanup refresh`. |
+| `heavy` | 10+ compactions, clear slowdown, user or agent notices context loss, quality drops, decisions are being forgotten, or handoff is needed now | Recommend `/project-cleanup now`. |
+
+Use this escalation ladder when the compaction count is visible in the chat history:
+
+- 3+ compactions: classify as `light`, suggest `/project-cleanup check`, and let the user answer yes/no if they want to keep going.
+- 5+ compactions: classify as `medium` and show the Performance Checkpoint prompt.
+- 10+ compactions: classify as `heavy` and recommend `/project-cleanup now` strongly after every additional compaction.
+
+When ProjectCleanup is installed as a plugin and its bundled hooks are trusted, the
+`PostCompact` hook tracks automatic compactions per Codex session and surfaces a
+color-coded Windows popup plus an in-app warning at 3, 5, 10, and every compaction after 10. A standalone `SKILL.md` cannot monitor
+compactions or open UI warnings by itself. Do not claim that automatic checkpoints
+are active unless the plugin hook is installed, enabled, and trusted.
 
 Classify as `medium`, not `heavy`, when the chat is long but still feels comfortable and the user reports no real loss of quality.
 
-When the result is `heavy`, notify the user that the cleanup may take longer and may use more context/tokens because an extended chat requires more careful reading and synthesis. This extra token use is acceptable for diagnosing, summarizing, and validating the handoff, but the final response should remain concise.
+When the result is `heavy`, notify the user that the cleanup may take longer and may use more context/tokens because an extended chat requires more careful reading and synthesis. This extra token use is acceptable for diagnosing, summarizing, and validating the handoff, but the final answer should remain concise.
 
 Use this output shape:
 
@@ -147,6 +159,12 @@ This chat appears heavy or at risk of context loss. Would you like to create a h
 3. Update agent.md only.
 ```
 
+Accept terse replies as shortcuts:
+
+- `yes` or `1` -> `/project-cleanup now`
+- `no` or `2` -> continue in this chat
+- `refresh`, `later`, or `3` -> `/project-cleanup refresh`
+
 Respect the answer:
 
 - Option 1 maps to `/project-cleanup now`.
@@ -160,6 +178,11 @@ Write the handoff to:
 ```text
 docs/codex/project-cleanup/agent.md
 ```
+
+This namespaced, project-relative path is intentional: it keeps the temporary
+handoff separate from root-level `AGENTS.md`, avoids filename collisions, and gives
+the next thread one stable file to read. Codex does not create this path by default;
+ProjectCleanup creates it as part of `refresh` and `now`.
 
 Replace stale content instead of appending forever. Keep the file useful as the single source for the next clean chat.
 

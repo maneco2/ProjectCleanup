@@ -1,0 +1,19 @@
+{
+  "description": "ProjectCleanup automatic compaction checkpoints.",
+  "hooks": {
+    "PostCompact": [
+      {
+        "matcher": "^auto$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${PLUGIN_ROOT}/hooks/post_compact.py\"",
+            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${PLUGIN_ROOT}\\hooks\\post_compact.ps1\"",
+            "timeout": 5,
+            "statusMessage": "Checking ProjectCleanup performance"
+          }
+        ]
+      }
+    ]
+  }
+}
