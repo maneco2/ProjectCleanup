@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatCleanup - Status"
+  short_description: "Check handoff presence and freshness"
+  default_prompt: "Use /chat-cleanup status to check the active project handoff without modifying it."

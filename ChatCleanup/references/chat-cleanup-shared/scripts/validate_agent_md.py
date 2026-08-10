@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a ProjectCleanup agent.md handoff."""
+"""Validate a ChatCleanup handoff block stored in AGENTS.md."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 REQUIRED_HEADINGS = [
-    "# ProjectCleanup Agent",
+    "# ChatCleanup Handoff",
     "## Init",
     "## Project Scope",
     "## Language Settings",
@@ -40,8 +40,8 @@ def count_words(text: str) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate ProjectCleanup agent.md")
-    parser.add_argument("path", help="Path to docs/codex/project-cleanup/agent.md")
+    parser = argparse.ArgumentParser(description="Validate ChatCleanup handoff content")
+    parser.add_argument("path", help="Path to the handoff file or extracted AGENTS.md block")
     parser.add_argument("--min-words", type=int, default=800)
     parser.add_argument("--max-words", type=int, default=1500)
     parser.add_argument("--strict-size", action="store_true", help="Fail when outside the word target")
@@ -72,7 +72,7 @@ def main() -> int:
         message = f"word count {words} is above target {args.min_words}-{args.max_words}"
         (errors if args.strict_size else warnings).append(message)
 
-    print(f"ProjectCleanup agent.md validation: {path}")
+    print(f"ChatCleanup handoff validation: {path}")
     print(f"Words: {words}")
 
     for warning in warnings:
@@ -83,7 +83,7 @@ def main() -> int:
     if errors:
         return 1
 
-    print("OK agent.md structure is valid")
+    print("OK ChatCleanup handoff structure is valid")
     return 0
 
 

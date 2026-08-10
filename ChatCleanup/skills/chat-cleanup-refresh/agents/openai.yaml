@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatCleanup - Refresh"
+  short_description: "Update the active project handoff directly"
+  default_prompt: "Use /chat-cleanup refresh to update the active project's AGENTS.md now."

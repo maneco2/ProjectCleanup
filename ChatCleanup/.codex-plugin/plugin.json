@@ -1,0 +1,48 @@
+{
+  "name": "chat-cleanup",
+  "version": "0.4.0+codex.20260810034500",
+  "description": "Global Codex commands for checking, previewing, refreshing, and continuing a clean project handoff.",
+  "author": {
+    "name": "Odair Devalier",
+    "url": "https://github.com/maneco2"
+  },
+  "homepage": "https://github.com/maneco2/ProjectCleanup",
+  "repository": "https://github.com/maneco2/ProjectCleanup",
+  "keywords": [
+    "codex",
+    "skill",
+    "handoff",
+    "context",
+    "cleanup",
+    "thread",
+    "global",
+    "guided",
+    "check",
+    "preview",
+    "status",
+    "refresh",
+    "now"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ChatCleanup",
+    "shortDescription": "Global commands for a clean Codex handoff.",
+    "longDescription": "ChatCleanup is a small global plugin with guided, check, preview, status, refresh, and now commands. It preserves content outside the managed AGENTS.md block, keeps project boundaries explicit, and optionally opens a local desktop command window for copy-and-paste guidance.",
+    "developerName": "Odair Devalier - L2JServer Junior Developer",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills",
+      "Hooks"
+    ],
+    "websiteURL": "https://github.com/maneco2/ProjectCleanup",
+    "defaultPrompt": [
+      "/chat-cleanup",
+      "/chat-cleanup check",
+      "/chat-cleanup preview",
+      "/chat-cleanup status",
+      "/chat-cleanup refresh",
+      "/chat-cleanup now"
+    ],
+    "brandColor": "#2F855A"
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatCleanup - Check"
+  short_description: "Diagnose the current chat health"
+  default_prompt: "Use /chat-cleanup check to classify the current chat without changing files."

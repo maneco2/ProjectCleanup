@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatCleanup"
+  short_description: "Refresh a handoff or start a clean chat"
+  default_prompt: "Use /chat-cleanup, check, preview, status, refresh, or now. All commands are global."

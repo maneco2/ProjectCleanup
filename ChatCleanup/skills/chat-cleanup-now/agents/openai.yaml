@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatCleanup - Now"
+  short_description: "Refresh the handoff and start a clean chat"
+  default_prompt: "Use /chat-cleanup now to refresh the active project and start a clean chat."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatCleanup - Guided Flow"
+  short_description: "Show the global refresh and now commands"
+  default_prompt: "Use /chat-cleanup to show all global ChatCleanup commands for the active project."
