@@ -19,9 +19,14 @@ Run these actions in order:
    contains the managed block.
 4. Prepare the new-thread init prompt from the resulting handoff. Include the
    active project root, `AGENTS.md`, the project boundary, and concise rules.
-5. If the host exposes `create_thread`, create a new project thread with that
-   prompt. Never use `fork_thread` as a fallback. If it is unavailable, show
-   the exact init prompt so the user can open a new chat manually.
+5. If the host exposes `create_thread`, create a new chat with that prompt.
+   Prefer a project thread when the active root is registered by the host. If
+   the active root is local but not registered, use the host's projectless
+   target with a directory name derived from the active root and keep the
+   absolute root in the init prompt. Never select another project's ID and
+   never use `fork_thread` as a fallback. If no thread-creation target is
+   available, show the exact init prompt so the user can open a new chat
+   manually.
 
 The write to `AGENTS.md` is direct and does not use an intermediate review
 step, confirmation dialog, local service, or in-chat panel. Never archive the old chat

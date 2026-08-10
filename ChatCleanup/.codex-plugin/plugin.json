@@ -1,6 +1,6 @@
 {
   "name": "chat-cleanup",
-  "version": "0.4.0+codex.20260810034500",
+  "version": "0.4.0+codex.20260810172202",
   "description": "Global Codex commands for checking, previewing, refreshing, and continuing a clean project handoff.",
   "author": {
     "name": "Odair Devalier",

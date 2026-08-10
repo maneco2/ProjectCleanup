@@ -2,7 +2,7 @@
 
 > Handoff limpo, comandos globais e uma janela nativa para continuar o trabalho no Codex.
 
-![Janela nativa do ChatCleanup no Codex](./ChatCleanup/assets/chatcleanup-checkpoint.png)
+![Janela nativa atualizada do ChatCleanup no Codex](./ChatCleanup/assets/chatcleanup-checkpoint.png)
 
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-111827?style=flat-square&logo=openai&logoColor=white)](https://github.com/maneco2/ProjectCleanup)
 ![Global commands](https://img.shields.io/badge/commands-global-16835B?style=flat-square)

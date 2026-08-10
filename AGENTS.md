@@ -4,176 +4,162 @@
 
 ## Init
 
-Continue the work in `C:\Users\manec\Documents\Codex Skill`.
-
-This is the active root for the local ChatCleanup plugin. Read this file before
-editing, confirm the root in the response, and keep this project and thread
-separate from every other workspace.
+Continue in `C:\Users\manec\Documents\Codex Skill`. This is the active root
+for the local ChatCleanup plugin. Read this handoff before editing, confirm the
+root in the response, and keep this project and thread isolated from every
+other workspace.
 
 ## Project Scope
 
-The active project is the `ChatCleanup/` plugin, the root `README.md`, the
-root `LICENSE`, and the root `AGENTS.md` handoff. The plugin is intentionally
-small and local-first: global chat skills, automatic compaction hooks, a
-native Windows checkpoint window, local translations, and a bundled handoff
-validator.
+The scope is the `ChatCleanup/` plugin, root `README.md`, root `LICENSE`, and
+root `AGENTS.md`. The design is intentionally small and local-first: global
+chat skills, automatic compaction hooks, a native Windows checkpoint window,
+local translations, and a bundled handoff validator.
 
 There is no MCP, in-chat Home, inline HTML resource, local server, remote
-service, or external runtime dependency. The native window is a command
-reference only. Its buttons copy text so the user can paste and send it in the
-correct Codex chat. It does not submit messages, inject keyboard input, or
-modify project files by itself.
+service, or external runtime dependency. The native window is a copy-only
+command reference. Its buttons copy text for the user to paste and send in the
+correct Codex chat; they do not submit messages, inject keyboard input, or
+modify project files by themselves.
 
-Never mix this root with L2Precious, FarmaControl, Drogaluz, GeoEditor,
-Lineage2 reverse-engineering work, or any other project. Do not restore the
-removed MCP/Home tree, old proposal workflow, permission helper, or obsolete
-package layout unless the user explicitly changes the design.
+## Global Commands
+
+When installed, all commands work independently of the active project:
+
+- `/chat-cleanup` opens the guided chooser and may open the Windows UI.
+- `/chat-cleanup check` diagnoses the current chat without writing files.
+- `/chat-cleanup preview` drafts the handoff in chat only.
+- `/chat-cleanup status` reports `AGENTS.md` presence, size, age, and freshness.
+- `/chat-cleanup refresh` updates only the managed block in this handoff.
+- `/chat-cleanup now` refreshes when needed, prepares `/init`, and creates a
+  project thread for registered roots or a projectless chat with the absolute
+  root in the prompt for unregistered local roots.
+
+`refresh` preserves every byte outside the two markers. `now` does not use
+`fork_thread` as a fallback and does not archive the old chat. The normal
+sequence is `check`, optional `preview` or `status`, `refresh`, then `now`.
 
 ## Language Settings
 
-Respond and think in Portuguese, briefly and directly. Keep slash commands,
-paths, function names, classes, code, and logs in English when that is clearer.
-The desktop catalog covers English, Brazilian Portuguese, Spanish, French,
-German, Italian, Simplified Chinese, Traditional Chinese, Japanese, Korean,
-Russian, and Arabic. Arabic uses the native right-to-left form layout.
-
-## Commands
-
-All commands are global when the plugin is installed:
-
-- `/chat-cleanup` opens the guided chooser and may open the native command
-  window on Windows.
-- `/chat-cleanup check` diagnoses the current chat without changing files.
-- `/chat-cleanup preview` drafts the current handoff in chat only.
-- `/chat-cleanup status` reports `AGENTS.md` presence, size, age, and freshness.
-- `/chat-cleanup refresh` directly updates the managed block in the active
-  root `AGENTS.md`.
-- `/chat-cleanup now` refreshes when necessary, prepares the `/init` prompt,
-  and creates a new project thread when the host exposes that capability.
-
-The normal sequence is `check`, optional `preview` or `status`, `refresh`, and
-then `now`. `refresh` preserves every byte outside the two handoff markers.
-`now` never uses `fork_thread` as a fallback and never archives the old chat.
+Respond and think in Portuguese, briefly and directly. Keep commands, paths,
+function names, classes, and logs in English when clearer. The native catalog
+covers English, Brazilian Portuguese, Spanish, French, German, Italian,
+Simplified Chinese, Traditional Chinese, Japanese, Korean, Russian, and
+Arabic; Arabic uses right-to-left layout. Never include secrets, credentials,
+cookies, private keys, tokens, or chat transcripts in the handoff.
 
 ## Quality Targets
 
-Keep the managed block between 800 and 1500 words, factual, current, and
-operationally useful. Never include secrets, private data, or full chat
-transcripts.
+Keep this managed block between 800 and 1500 words, factual, current, and
+operationally useful. Do not include private dumps, full transcripts, or
+credentials.
 
 ## Current State
 
-The manifest is `ChatCleanup/.codex-plugin/plugin.json`, currently version
-`0.4.0+codex.20260810034500`. It declares only Skills and Hooks, lists all
-six global command forms in its interface, and contains no MCP server entry.
-The package currently contains 23 files, including the README checkpoint
-image at `ChatCleanup/assets/chatcleanup-checkpoint.png`.
+`ChatCleanup/.codex-plugin/plugin.json` is version
+`0.4.0+codex.20260810172202`. It declares Skills and Hooks only, lists the six
+global command forms, and has no MCP server entry. The package contains 23
+files, including `ChatCleanup/assets/chatcleanup-checkpoint.png`.
 
-`ChatCleanup/hooks/hooks.json` configures `PostCompact`. Windows uses
-`post_compact.ps1`; other environments use `post_compact.py`. The hook stores
+`ChatCleanup/hooks/hooks.json` registers `PostCompact`. Windows uses
+`post_compact.ps1`; other environments use `post_compact.py`. The hook keeps
 one counter per session under `PLUGIN_DATA/compactions`, reports milestones at
-3, 5, and 10 automatic compactions, and continues safely when its environment
+3, 5, and 10 automatic compactions, and falls back safely when its environment
 is incomplete.
 
-On Windows, `show_checkpoint.ps1` opens a fixed native WinForms window. It
-shows the current count, the `LIGHT`, `MEDIUM`, and `HEAVY` progression, the
-recommended actions, an all-commands tab, and copy buttons. The level labels
-use adaptive sizing so they remain visible in the supported languages. The
-window uses a Codex-style knot icon in the title bar, header, and taskbar,
-hides the PowerShell console from the taskbar, and sets a dedicated app
-identity. The localized catalog is
-`ChatCleanup/hooks/checkpoint-locales.json`.
+The Windows helper is `ChatCleanup/hooks/show_checkpoint.ps1`. It uses a fixed
+WinForms window, Codex-style knot icon, dark title bar, dark surfaces, a
+custom dark tab strip, visible tab borders, and outlined level rows for
+`LIGHT`, `MEDIUM`, and `HEAVY`. It shows recommended actions and all six
+commands; buttons only copy commands. The helper uses the 12-entry catalog in
+`ChatCleanup/hooks/checkpoint-locales.json` and adaptive text sizing for long
+translations. The latest source is also installed manually in the personal
+cache under `0.4.0+codex.20260810172202` because the `codex plugin add` CLI was
+blocked by Windows with “Access denied”. A fresh Codex chat is required to
+load the updated cache. The `now` skill now supports an unregistered local root
+through the host's projectless target and never selects another root.
 
-The root README was modernized with Markdown-only rendering, a command table,
-flow overview, safety rules, development instructions, and the native window
-hero image. HTML tags were removed because the Codex README preview displayed
-them as raw text. The image is stored inside the plugin source at
-`ChatCleanup/assets/chatcleanup-checkpoint.png`.
+The README is Markdown-only and contains the modern command table, workflow,
+safety rules, development notes, and the cropped native-window image at
+`ChatCleanup/assets/chatcleanup-checkpoint.png`. HTML tags were removed because
+the Codex README preview rendered them as raw text.
 
 ## Important Decisions
 
-- Work only in `C:\Users\manec\Documents\Codex Skill` unless the user names
-  another root explicitly.
-- Keep commands global; command names must not depend on the active project.
-- Use only the current project root and current chat as context sources.
-- Limit `refresh` writes to the marked block in the active root `AGENTS.md`.
-- Keep the native window copy-and-paste only; never automate sending commands.
+- Work only in this root unless the user explicitly names another root.
+- Keep commands global and independent of project names.
+- Do not restore the removed MCP/Home tree, old proposal workflow, permission
+  helper, or obsolete package layout.
+- Keep the native helper copy-and-paste only; never automate sending commands.
 - Keep the README and image asset inside this repository.
-- Do not expose credentials, tokens, cookies, private keys, or chat transcripts.
-- Do not commit, push, publish, or edit marketplace configuration without
-  explicit authorization. The user has now explicitly authorized sending this
-  complete project to the configured private GitHub remote.
+- Preserve unrelated working-tree changes and never use destructive Git reset
+  or checkout operations.
+- The user authorized publishing this project to the configured private remote
+  earlier, but the current dark-UI/cachebuster changes are not committed or
+  pushed. Do not publish them until explicitly requested again.
 
 ## Relevant Files
 
-- `ChatCleanup/.codex-plugin/plugin.json`: manifest, capabilities, command
-  prompts, and cachebuster version.
-- `ChatCleanup/hooks/hooks.json`: post-compaction hook registration.
-- `ChatCleanup/hooks/post_compact.ps1` and `post_compact.py`: counter and
-  checkpoint fallback logic.
-- `ChatCleanup/hooks/show_checkpoint.ps1`: native translated command window,
-  adaptive level labels, and Codex-style icon.
-- `ChatCleanup/hooks/checkpoint-locales.json`: 12 local translations.
-- `ChatCleanup/skills/`: guided, check, preview, status, refresh, and now
-  global skills.
-- `ChatCleanup/references/chat-cleanup-shared/`: workflow, template, and
-  validator resources.
-- `ChatCleanup/assets/chatcleanup-checkpoint.png`: README hero image.
-- `README.md`: user-facing documentation and installation guide.
+- `ChatCleanup/.codex-plugin/plugin.json`: manifest and cachebuster.
+- `ChatCleanup/hooks/hooks.json`: post-compaction registration.
+- `ChatCleanup/hooks/post_compact.ps1` and `post_compact.py`: counter logic.
+- `ChatCleanup/hooks/show_checkpoint.ps1`: native translated UI and icon.
+- `ChatCleanup/hooks/checkpoint-locales.json`: 12 local catalogs.
+- `ChatCleanup/skills/`: guided, check, preview, status, refresh, and now,
+  including the unregistered-local-root thread fallback.
+- `ChatCleanup/references/chat-cleanup-shared/`: workflow and validators.
+- `ChatCleanup/assets/chatcleanup-checkpoint.png`: README image.
+- `README.md`: user-facing documentation.
 
 ## Validated Commands
 
-- `validate_plugin.py ChatCleanup` passed after the manifest update.
-- `validate_agent_md.py AGENTS.md --strict-size` passed before this refresh.
-- JSON parsing passed for the manifest, hooks configuration, and locale catalog.
-- PowerShell parser validation passed for both hook scripts.
-- Python compilation passed for the hook and bundled validator.
-- The native window was launched in Portuguese and English during visual
-  checks; the icon and adaptive level labels were verified in the desktop UI.
-- The guided skill and all per-skill prompts now reference the six global slash
-  commands consistently.
-- The locale catalog contains a translated copy label for all 12 supported
-  languages, including the fallback path when the catalog is unavailable.
-- The GitHub remote authentication was verified with `git ls-remote` without
-  exposing credentials.
+`validate_plugin.py ChatCleanup` passed after the cachebuster update. PowerShell
+syntax parsing passed after the dark-theme and level-border edits. The source
+and manually installed cache copy of `show_checkpoint.ps1` have matching SHA256
+hashes. The current worktree has uncommitted changes in
+`ChatCleanup/.codex-plugin/plugin.json` and
+`ChatCleanup/hooks/show_checkpoint.ps1`; no commit or push was made for these
+latest changes. The prior remote commit remains the last published state.
+
+## Worktree State
+
+The managed handoff itself is refreshed locally. No commit, push, publication,
+or marketplace edit was performed by this command.
 
 ## Next Actions
 
-1. Validate this refreshed `AGENTS.md` and the final plugin once more.
-2. Stage the complete working tree, including the migration, README, plugin,
-   and image asset.
-3. Create one commit and push it to the configured private `origin` on `main`,
-   as explicitly requested by the user.
-4. Verify the pushed commit and clean working tree with a remote check.
-5. Reinstall the local plugin and open a fresh Codex chat for runtime testing.
+1. Validate this refreshed `AGENTS.md` and the complete plugin again.
+2. Start a fresh Codex chat and send `/chat-cleanup` to test the updated cache.
+3. Verify the dark UI visually, especially the tab-strip background and the
+   three bordered level rows.
+4. If the user explicitly requests publication, review the complete diff,
+   create one commit, push to the configured private remote, and verify it.
 
 ## Risks And Guardrails
 
-The native window requires Windows Forms and a desktop session. If unavailable,
-the hook must fall back to a short chat message. Clipboard access is limited
-to explicit copy buttons. Do not launch the helper as a replacement for the
-active chat command. Do not claim a new thread exists without a fresh
-`threadId` or `pendingWorktreeId` from the host. Preserve unrelated migration
-changes already present in the working tree and do not use destructive Git
-commands.
+The native window requires Windows Forms, a desktop session, and a fresh chat
+after plugin reinstall. If the host cannot surface a desktop window, the hook
+must fall back to a short chat message. Clipboard access is limited to explicit
+copy buttons. Do not claim that a new thread exists without a fresh
+`threadId` or `pendingWorktreeId`. Do not mix this root with L2Precious,
+FarmaControl, Drogaluz, GeoEditor, or Lineage2 reverse-engineering work.
 
 ## Suggested Memory Note
 
-The current ChatCleanup design is a local global-command plugin with a native
-copy-only checkpoint window, 12 local catalogs, direct managed-block refresh,
-and no MCP or service layer.
+ChatCleanup is a local global-command plugin with a native copy-only checkpoint
+window, 12 local catalogs, direct managed-block refresh, and no MCP or service
+layer. The current UI source uses a dark theme and explicit borders for the
+three compaction levels.
 
 ## Validation Checklist
 
-- [x] Active root confirmed and isolated.
-- [x] Simple Skills and Hooks design retained without MCP.
-- [x] Six global command skills present.
-- [x] Native checkpoint window and 12 local translations present.
-- [x] Codex-style icon and adaptive level labels implemented.
-- [x] Modern Markdown README and source asset added.
-- [x] Manifest updated with all global command forms and new cachebuster.
-- [x] Plugin, handoff, JSON, PowerShell, and Python checks passed.
-- [x] Private GitHub remote authentication verified.
-- [ ] Final commit, push, and post-push remote verification pending.
+- [x] Active root isolated and global command design retained.
+- [x] Six global command skills and 12 local catalogs present.
+- [x] Native UI uses Codex icon, dark theme, tab coverage, and level borders.
+- [x] Modern Markdown README and source image asset present.
+- [x] Plugin validation and PowerShell parser validation passed.
+- [x] Updated cache copy matches the current UI source.
+- [ ] Fresh-chat visual test completed.
+- [ ] Latest UI changes committed and pushed only if explicitly requested.
 
 <!-- END PROJECTCLEANUP HANDOFF -->

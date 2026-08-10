@@ -29,6 +29,17 @@ public static class ChatCleanupConsole {
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     public static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
 
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int valueSize);
+
+    public static void UseDarkTitleBar(IntPtr hWnd) {
+        int enabled = 1;
+        const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+        if (DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref enabled, sizeof(int)) != 0) {
+            DwmSetWindowAttribute(hWnd, 19, ref enabled, sizeof(int));
+        }
+    }
+
     [DllImport("user32.dll")]
     public static extern int GetWindowLong(IntPtr hWnd, int index);
 
@@ -75,7 +86,7 @@ function Add-TextLabel {
         [Parameter(Mandatory = $true)][System.Drawing.Point]$Location,
         [Parameter(Mandatory = $true)][System.Drawing.Size]$Size,
         [System.Drawing.Font]$Font,
-        [System.Drawing.Color]$Color = ([System.Drawing.Color]::FromArgb(48, 54, 61))
+        [System.Drawing.Color]$Color = ([System.Drawing.Color]::FromArgb(232, 237, 242))
     )
     $label = New-Object System.Windows.Forms.Label
     $label.Text = $Text
@@ -156,11 +167,18 @@ $levelName = switch ($Level) {
 }
 
 $accent = switch ($Level) {
-    3 { [System.Drawing.Color]::FromArgb(34, 139, 94) }
-    5 { [System.Drawing.Color]::FromArgb(209, 154, 22) }
-    10 { [System.Drawing.Color]::FromArgb(196, 48, 43) }
-    default { [System.Drawing.Color]::FromArgb(55, 100, 180) }
+    3 { [System.Drawing.Color]::FromArgb(24, 121, 82) }
+    5 { [System.Drawing.Color]::FromArgb(160, 111, 0) }
+    10 { [System.Drawing.Color]::FromArgb(146, 39, 35) }
+    default { [System.Drawing.Color]::FromArgb(40, 82, 145) }
 }
+$surface = [System.Drawing.Color]::FromArgb(18, 22, 28)
+$surfaceRaised = [System.Drawing.Color]::FromArgb(25, 31, 39)
+$surfaceSoft = [System.Drawing.Color]::FromArgb(31, 39, 49)
+$border = [System.Drawing.Color]::FromArgb(62, 73, 86)
+$textPrimary = [System.Drawing.Color]::FromArgb(232, 237, 242)
+$textSecondary = [System.Drawing.Color]::FromArgb(171, 184, 198)
+$textMuted = [System.Drawing.Color]::FromArgb(132, 146, 162)
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = Get-Text -Key 'formTitle'
@@ -170,7 +188,7 @@ $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
 $form.TopMost = $true
-$form.BackColor = [System.Drawing.Color]::White
+$form.BackColor = $surface
 $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.RightToLeft = if ($culture -like 'ar*') { 'Yes' } else { 'No' }
 $null = [ChatCleanupConsole]::SetCurrentProcessExplicitAppUserModelID('ChatCleanup.Codex')
@@ -178,7 +196,9 @@ $iconState = New-ChatCleanupIcon
 $form.Icon = $iconState.Icon
 
 $header = New-Object System.Windows.Forms.Panel
-$header.Dock = 'Top'
+$header.Dock = 'None'
+$header.Location = New-Object System.Drawing.Point(0, 0)
+$header.Size = New-Object System.Drawing.Size(920, 92)
 $header.Height = 92
 $header.BackColor = $accent
 $form.Controls.Add($header)
@@ -200,23 +220,46 @@ $positionBadge = {
 }.GetNewClosure()
 $header.Add_SizeChanged({ & $positionBadge }.GetNewClosure())
 
+$body = New-Object System.Windows.Forms.Panel
+$body.Dock = 'None'
+$body.Location = New-Object System.Drawing.Point(0, 92)
+$body.Size = New-Object System.Drawing.Size(920, 478)
+$body.BackColor = $surface
+
 $summaryPanel = New-Object System.Windows.Forms.Panel
-$summaryPanel.Dock = 'Left'
+$summaryPanel.Dock = 'None'
+$summaryPanel.Location = New-Object System.Drawing.Point(0, 0)
+$summaryPanel.Size = New-Object System.Drawing.Size(300, 478)
 $summaryPanel.Width = 300
-$summaryPanel.BackColor = [System.Drawing.Color]::FromArgb(238, 241, 244)
-$form.Controls.Add($summaryPanel)
-Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'automatic') -Location (New-Object System.Drawing.Point(25, 27)) -Size (New-Object System.Drawing.Size(246, 22)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 8)) -Color ([System.Drawing.Color]::FromArgb(105, 114, 124)) | Out-Null
+$summaryPanel.BackColor = $surfaceRaised
+$summaryPanel.Padding = New-Object System.Windows.Forms.Padding(0)
+Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'automatic') -Location (New-Object System.Drawing.Point(25, 27)) -Size (New-Object System.Drawing.Size(246, 22)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 8)) -Color $textMuted | Out-Null
 $countLabel = Add-TextLabel -Parent $summaryPanel -Text ([string]$Count) -Location (New-Object System.Drawing.Point(24, 53)) -Size (New-Object System.Drawing.Size(60, 48)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 30))
-Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'detected') -Location (New-Object System.Drawing.Point(88, 79)) -Size (New-Object System.Drawing.Size(150, 22)) -Font (New-Object System.Drawing.Font('Segoe UI', 9)) -Color ([System.Drawing.Color]::FromArgb(109, 117, 128)) | Out-Null
-Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'summary') -Location (New-Object System.Drawing.Point(25, 124)) -Size (New-Object System.Drawing.Size(246, 82)) -Font (New-Object System.Drawing.Font('Segoe UI', 9)) -Color ([System.Drawing.Color]::FromArgb(81, 91, 101)) | Out-Null
+Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'detected') -Location (New-Object System.Drawing.Point(88, 79)) -Size (New-Object System.Drawing.Size(150, 22)) -Font (New-Object System.Drawing.Font('Segoe UI', 9)) -Color $textMuted | Out-Null
+Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'summary') -Location (New-Object System.Drawing.Point(25, 124)) -Size (New-Object System.Drawing.Size(246, 82)) -Font (New-Object System.Drawing.Font('Segoe UI', 9)) -Color $textSecondary | Out-Null
 
 function Add-LevelMarker {
     param([int]$Y, [string]$Text, [bool]$Active)
+    $levelRow = New-Object System.Windows.Forms.Panel
+    $levelRow.BackColor = $surfaceRaised
+    $levelRow.Location = New-Object System.Drawing.Point(18, ($Y - 5))
+    $levelRow.Size = New-Object System.Drawing.Size(264, 34)
+    $levelRow.Add_Paint({
+        param($sender, $eventArgs)
+        $rowBorder = if ($Active) { [System.Drawing.Color]::FromArgb(55, 201, 137) } else { [System.Drawing.Color]::FromArgb(62, 73, 86) }
+        $pen = New-Object System.Drawing.Pen($rowBorder, 1)
+        try {
+            $eventArgs.Graphics.DrawRectangle($pen, 0, 0, $sender.Width - 1, $sender.Height - 1)
+        } finally {
+            $pen.Dispose()
+        }
+    }.GetNewClosure())
+    $summaryPanel.Controls.Add($levelRow)
     $markerText = if ($Active) { [char]0x25CF } else { [char]0x25CB }
-    $markerColor = if ($Active) { $accent } else { [System.Drawing.Color]::FromArgb(165, 173, 182) }
-    $marker = Add-TextLabel -Parent $summaryPanel -Text $markerText -Location (New-Object System.Drawing.Point(25, $Y)) -Size (New-Object System.Drawing.Size(24, 24)) -Font (New-Object System.Drawing.Font('Segoe UI Symbol', 13)) -Color $markerColor
+    $markerColor = if ($Active) { [System.Drawing.Color]::FromArgb(55, 201, 137) } else { $textMuted }
+    $marker = Add-TextLabel -Parent $levelRow -Text $markerText -Location (New-Object System.Drawing.Point(8, 2)) -Size (New-Object System.Drawing.Size(24, 28)) -Font (New-Object System.Drawing.Font('Segoe UI Symbol', 13)) -Color $markerColor
     $fontStyle = if ($Active) { [System.Drawing.FontStyle]::Bold } else { [System.Drawing.FontStyle]::Regular }
-    $textColor = if ($Active) { [System.Drawing.Color]::FromArgb(32, 38, 45) } else { [System.Drawing.Color]::FromArgb(112, 121, 132) }
+    $textColor = if ($Active) { $textPrimary } else { $textSecondary }
     $fontSize = 9.0
     $levelFont = $null
     while ($fontSize -ge 7.5) {
@@ -229,7 +272,7 @@ function Add-LevelMarker {
         $fontSize -= 0.5
     }
     if ($null -eq $levelFont) { $levelFont = New-Object System.Drawing.Font('Segoe UI', 7.5, $fontStyle) }
-    $levelLabel = Add-TextLabel -Parent $summaryPanel -Text $Text -Location (New-Object System.Drawing.Point(53, ($Y + 4))) -Size (New-Object System.Drawing.Size(244, 22)) -Font $levelFont -Color $textColor
+    $levelLabel = Add-TextLabel -Parent $levelRow -Text $Text -Location (New-Object System.Drawing.Point(34, 3)) -Size (New-Object System.Drawing.Size(222, 26)) -Font $levelFont -Color $textColor
     $levelLabel.AutoEllipsis = $false
     $levelLabel.TextAlign = if ($culture -like 'ar*') { 'MiddleRight' } else { 'MiddleLeft' }
     $levelLabel.RightToLeft = $form.RightToLeft
@@ -238,44 +281,84 @@ function Add-LevelMarker {
 Add-LevelMarker -Y 226 -Text ('3 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'light')) -Active ($Level -eq 3)
 Add-LevelMarker -Y 270 -Text ('5 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'medium')) -Active ($Level -eq 5)
 Add-LevelMarker -Y 314 -Text ('10 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'heavy')) -Active ($Level -eq 10)
-Add-TextLabel -Parent $summaryPanel -Text $message -Location (New-Object System.Drawing.Point(25, 385)) -Size (New-Object System.Drawing.Size(246, 70)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color ([System.Drawing.Color]::FromArgb(83, 92, 102)) | Out-Null
+if (-not [string]::IsNullOrWhiteSpace($MessageBase64)) {
+    Add-TextLabel -Parent $summaryPanel -Text $message -Location (New-Object System.Drawing.Point(25, 385)) -Size (New-Object System.Drawing.Size(246, 70)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color $textSecondary | Out-Null
+}
 
-$tabs = New-Object System.Windows.Forms.TabControl
-$tabs.Dock = 'Fill'
-$tabs.Font = New-Object System.Drawing.Font('Segoe UI', 9)
-$form.Controls.Add($tabs)
-$tabs.BringToFront()
-$actions = New-Object System.Windows.Forms.TabPage
-$actions.Text = Get-Text -Key 'recommended'
-$actions.BackColor = [System.Drawing.Color]::White
-$tabs.TabPages.Add($actions)
-$commandsPage = New-Object System.Windows.Forms.TabPage
-$commandsPage.Text = Get-Text -Key 'allCommands'
-$commandsPage.BackColor = [System.Drawing.Color]::White
-$tabs.TabPages.Add($commandsPage)
+$mainPanel = New-Object System.Windows.Forms.Panel
+$mainPanel.Dock = 'None'
+$mainPanel.Location = New-Object System.Drawing.Point(300, 0)
+$mainPanel.Size = New-Object System.Drawing.Size(620, 478)
+$mainPanel.BackColor = $surface
+$body.Controls.Add($mainPanel)
+$body.Controls.Add($summaryPanel)
+$form.Controls.Add($body)
+
+$tabStrip = New-Object System.Windows.Forms.Panel
+$tabStrip.Dock = 'None'
+$tabStrip.Location = New-Object System.Drawing.Point(0, 0)
+$tabStrip.Size = New-Object System.Drawing.Size(620, 34)
+$tabStrip.Height = 34
+$tabStrip.BackColor = $surface
+
+$actionsTab = New-Object System.Windows.Forms.Button
+$actionsTab.Text = Get-Text -Key 'recommended'
+$actionsTab.Size = New-Object System.Drawing.Size(142, 34)
+$actionsTab.Location = New-Object System.Drawing.Point(0, 0)
+$actionsTab.FlatStyle = 'Flat'
+$actionsTab.FlatAppearance.BorderSize = 1
+$actionsTab.Font = New-Object System.Drawing.Font('Segoe UI', 8.5)
+$tabStrip.Controls.Add($actionsTab)
+
+$commandsTab = New-Object System.Windows.Forms.Button
+$commandsTab.Text = Get-Text -Key 'allCommands'
+$commandsTab.Size = New-Object System.Drawing.Size(142, 34)
+$commandsTab.Location = New-Object System.Drawing.Point(142, 0)
+$commandsTab.FlatStyle = 'Flat'
+$commandsTab.FlatAppearance.BorderSize = 1
+$commandsTab.Font = New-Object System.Drawing.Font('Segoe UI', 8.5)
+$tabStrip.Controls.Add($commandsTab)
+
+$pageHost = New-Object System.Windows.Forms.Panel
+$pageHost.Dock = 'None'
+$pageHost.Location = New-Object System.Drawing.Point(0, 34)
+$pageHost.Size = New-Object System.Drawing.Size(620, 444)
+$pageHost.BackColor = $surface
+$mainPanel.Controls.Add($pageHost)
+$mainPanel.Controls.Add($tabStrip)
+
+$actions = New-Object System.Windows.Forms.Panel
+$actions.Dock = 'Fill'
+$actions.BackColor = $surface
+$pageHost.Controls.Add($actions)
+
+$commandsPage = New-Object System.Windows.Forms.Panel
+$commandsPage.Dock = 'Fill'
+$commandsPage.BackColor = $surface
+$pageHost.Controls.Add($commandsPage)
 Add-TextLabel -Parent $actions -Text (Get-Text -Key 'choose') -Location (New-Object System.Drawing.Point(24, 20)) -Size (New-Object System.Drawing.Size(500, 30)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 13)) | Out-Null
-Add-TextLabel -Parent $actions -Text (Get-Text -Key 'hint') -Location (New-Object System.Drawing.Point(25, 50)) -Size (New-Object System.Drawing.Size(520, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color ([System.Drawing.Color]::FromArgb(105, 114, 124)) | Out-Null
-$status = Add-TextLabel -Parent $actions -Text (Get-Text -Key 'none') -Location (New-Object System.Drawing.Point(25, 408)) -Size (New-Object System.Drawing.Size(420, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color ([System.Drawing.Color]::FromArgb(89, 112, 99))
+Add-TextLabel -Parent $actions -Text (Get-Text -Key 'hint') -Location (New-Object System.Drawing.Point(25, 50)) -Size (New-Object System.Drawing.Size(520, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color $textMuted | Out-Null
+$status = Add-TextLabel -Parent $actions -Text (Get-Text -Key 'none') -Location (New-Object System.Drawing.Point(25, 408)) -Size (New-Object System.Drawing.Size(420, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color ([System.Drawing.Color]::FromArgb(105, 196, 151))
 
 function Add-ActionRow {
     param([int]$Index, [int]$Y, [string]$Title, [string]$Description, [string]$ButtonText, [string]$Command, [bool]$Primary = $false)
     $line = New-Object System.Windows.Forms.Panel
-    $line.BackColor = [System.Drawing.Color]::FromArgb(221, 225, 229)
+    $line.BackColor = $border
     $line.Size = New-Object System.Drawing.Size(568, 1)
     $line.Location = New-Object System.Drawing.Point(24, $Y)
     $actions.Controls.Add($line)
-    Add-TextLabel -Parent $actions -Text ('{0:D2}' -f $Index) -Location (New-Object System.Drawing.Point(25, ($Y + 22))) -Size (New-Object System.Drawing.Size(32, 32)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 8)) -Color ([System.Drawing.Color]::FromArgb(91, 103, 115)) | Out-Null
+    Add-TextLabel -Parent $actions -Text ('{0:D2}' -f $Index) -Location (New-Object System.Drawing.Point(25, ($Y + 22))) -Size (New-Object System.Drawing.Size(32, 32)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 8)) -Color $textMuted | Out-Null
     $rowTitle = Add-TextLabel -Parent $actions -Text $Title -Location (New-Object System.Drawing.Point(80, ($Y + 18))) -Size (New-Object System.Drawing.Size(350, 24)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 10)) | Out-Null
-    Add-TextLabel -Parent $actions -Text $Description -Location (New-Object System.Drawing.Point(80, ($Y + 42))) -Size (New-Object System.Drawing.Size(350, 34)) -Font (New-Object System.Drawing.Font('Segoe UI', 8)) -Color ([System.Drawing.Color]::FromArgb(112, 121, 132)) | Out-Null
+    Add-TextLabel -Parent $actions -Text $Description -Location (New-Object System.Drawing.Point(80, ($Y + 42))) -Size (New-Object System.Drawing.Size(350, 34)) -Font (New-Object System.Drawing.Font('Segoe UI', 8)) -Color $textMuted | Out-Null
     $button = New-Object System.Windows.Forms.Button
     $button.Text = $ButtonText
     $button.Size = New-Object System.Drawing.Size(134, 38)
     $button.Location = New-Object System.Drawing.Point(458, ($Y + 22))
     $button.FlatStyle = 'Flat'
     $button.FlatAppearance.BorderSize = 1
-    $button.BackColor = if ($Primary) { $accent } else { [System.Drawing.Color]::White }
-    $button.ForeColor = if ($Primary) { [System.Drawing.Color]::White } else { [System.Drawing.Color]::FromArgb(48, 54, 61) }
-    $button.FlatAppearance.BorderColor = if ($Primary) { $accent } else { [System.Drawing.Color]::FromArgb(184, 190, 197) }
+    $button.BackColor = if ($Primary) { $accent } else { $surfaceSoft }
+    $button.ForeColor = $textPrimary
+    $button.FlatAppearance.BorderColor = if ($Primary) { $accent } else { $border }
     $commandToCopy = $Command
     $statusToUpdate = $status
     $buttonToUpdate = $button
@@ -292,7 +375,7 @@ Add-ActionRow -Index 2 -Y 166 -Title (Get-Text -Key 'refreshTitle') -Description
 Add-ActionRow -Index 3 -Y 249 -Title (Get-Text -Key 'nowTitle') -Description (Get-Text -Key 'nowDescription') -ButtonText (Get-Text -Key 'copyNow') -Command '/chat-cleanup now' -Primary $true
 
 $footerLine = New-Object System.Windows.Forms.Panel
-$footerLine.BackColor = [System.Drawing.Color]::FromArgb(221, 225, 229)
+$footerLine.BackColor = $border
 $footerLine.Size = New-Object System.Drawing.Size(568, 1)
 $footerLine.Location = New-Object System.Drawing.Point(24, 386)
 $actions.Controls.Add($footerLine)
@@ -301,28 +384,28 @@ $continueButton.Text = Get-Text -Key 'continue'
 $continueButton.Size = New-Object System.Drawing.Size(118, 38)
 $continueButton.Location = New-Object System.Drawing.Point(474, 396)
 $continueButton.FlatStyle = 'Flat'
-$continueButton.BackColor = [System.Drawing.Color]::White
-$continueButton.ForeColor = [System.Drawing.Color]::FromArgb(48, 54, 61)
-$continueButton.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(184, 190, 197)
+$continueButton.BackColor = $surfaceSoft
+$continueButton.ForeColor = $textPrimary
+$continueButton.FlatAppearance.BorderColor = $border
 $continueButton.Add_Click({ $form.Close() }.GetNewClosure())
 $actions.Controls.Add($continueButton)
 
 Add-TextLabel -Parent $commandsPage -Text (Get-Text -Key 'commandsTitle') -Location (New-Object System.Drawing.Point(24, 22)) -Size (New-Object System.Drawing.Size(500, 30)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 13)) | Out-Null
-Add-TextLabel -Parent $commandsPage -Text (Get-Text -Key 'commandsHint') -Location (New-Object System.Drawing.Point(25, 50)) -Size (New-Object System.Drawing.Size(520, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color ([System.Drawing.Color]::FromArgb(105, 114, 124)) | Out-Null
-$commandsStatus = Add-TextLabel -Parent $commandsPage -Text (Get-Text -Key 'commandsStatus') -Location (New-Object System.Drawing.Point(25, 407)) -Size (New-Object System.Drawing.Size(500, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color ([System.Drawing.Color]::FromArgb(89, 112, 99))
+Add-TextLabel -Parent $commandsPage -Text (Get-Text -Key 'commandsHint') -Location (New-Object System.Drawing.Point(25, 50)) -Size (New-Object System.Drawing.Size(520, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color $textMuted | Out-Null
+$commandsStatus = Add-TextLabel -Parent $commandsPage -Text (Get-Text -Key 'commandsStatus') -Location (New-Object System.Drawing.Point(25, 407)) -Size (New-Object System.Drawing.Size(500, 24)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color ([System.Drawing.Color]::FromArgb(105, 196, 151))
 
 function Add-CommandRow {
     param([int]$Y, [string]$Command, [string]$Description)
     Add-TextLabel -Parent $commandsPage -Text $Command -Location (New-Object System.Drawing.Point(25, $Y)) -Size (New-Object System.Drawing.Size(400, 22)) -Font (New-Object System.Drawing.Font('Consolas', 9)) | Out-Null
-    Add-TextLabel -Parent $commandsPage -Text $Description -Location (New-Object System.Drawing.Point(25, ($Y + 20))) -Size (New-Object System.Drawing.Size(390, 30)) -Font (New-Object System.Drawing.Font('Segoe UI', 8)) -Color ([System.Drawing.Color]::FromArgb(112, 121, 132)) | Out-Null
+    Add-TextLabel -Parent $commandsPage -Text $Description -Location (New-Object System.Drawing.Point(25, ($Y + 20))) -Size (New-Object System.Drawing.Size(390, 30)) -Font (New-Object System.Drawing.Font('Segoe UI', 8)) -Color $textMuted | Out-Null
     $copyButton = New-Object System.Windows.Forms.Button
     $copyButton.Text = $copyLabel
     $copyButton.Size = New-Object System.Drawing.Size(92, 32)
     $copyButton.Location = New-Object System.Drawing.Point(500, ($Y + 3))
     $copyButton.FlatStyle = 'Flat'
-    $copyButton.BackColor = [System.Drawing.Color]::White
-    $copyButton.ForeColor = [System.Drawing.Color]::FromArgb(48, 54, 61)
-    $copyButton.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(184, 190, 197)
+    $copyButton.BackColor = $surfaceSoft
+    $copyButton.ForeColor = $textPrimary
+    $copyButton.FlatAppearance.BorderColor = $border
     $commandToCopy = $Command
     $statusToUpdate = $commandsStatus
     $buttonToUpdate = $copyButton
@@ -341,7 +424,47 @@ Add-CommandRow -Y 238 -Command '/chat-cleanup status' -Description (Get-Text -Ke
 Add-CommandRow -Y 290 -Command '/chat-cleanup refresh' -Description (Get-Text -Key 'refreshCommand')
 Add-CommandRow -Y 342 -Command '/chat-cleanup now' -Description (Get-Text -Key 'nowCommand')
 
+$setTabColors = {
+    param([bool]$CommandsSelected)
+    $selectedBack = $accent
+    $unselectedBack = $surfaceSoft
+    $selectedBorder = $accent
+    $unselectedBorder = $border
+    $actionsTab.BackColor = if ($CommandsSelected) { $unselectedBack } else { $selectedBack }
+    $actionsTab.ForeColor = if ($CommandsSelected) { $textSecondary } else { [System.Drawing.Color]::White }
+    $actionsTab.FlatAppearance.BorderColor = if ($CommandsSelected) { $unselectedBorder } else { $selectedBorder }
+    $commandsTab.BackColor = if ($CommandsSelected) { $selectedBack } else { $unselectedBack }
+    $commandsTab.ForeColor = if ($CommandsSelected) { [System.Drawing.Color]::White } else { $textSecondary }
+    $commandsTab.FlatAppearance.BorderColor = if ($CommandsSelected) { $selectedBorder } else { $unselectedBorder }
+    $actions.Visible = -not $CommandsSelected
+    $commandsPage.Visible = $CommandsSelected
+}.GetNewClosure()
+$actionsTab.Add_Click({ & $setTabColors $false }.GetNewClosure())
+$commandsTab.Add_Click({ & $setTabColors $true }.GetNewClosure())
+& $setTabColors $false
+
+$layoutUi = {
+    $bodyWidth = [Math]::Max(0, $body.ClientSize.Width)
+    $bodyHeight = [Math]::Max(0, $body.ClientSize.Height)
+    $summaryWidth = [Math]::Min(300, $bodyWidth)
+    $mainWidth = [Math]::Max(0, $bodyWidth - $summaryWidth)
+    $summaryPanel.Bounds = New-Object System.Drawing.Rectangle(0, 0, $summaryWidth, $bodyHeight)
+    $mainPanel.Bounds = New-Object System.Drawing.Rectangle($summaryWidth, 0, $mainWidth, $bodyHeight)
+    $tabStrip.Bounds = New-Object System.Drawing.Rectangle(0, 0, $mainWidth, 34)
+    $pageHost.Bounds = New-Object System.Drawing.Rectangle(0, 34, $mainWidth, [Math]::Max(0, $bodyHeight - 34))
+}.GetNewClosure()
+$layoutRoot = {
+    $clientWidth = [Math]::Max(0, $form.ClientSize.Width)
+    $clientHeight = [Math]::Max(0, $form.ClientSize.Height)
+    $header.Bounds = New-Object System.Drawing.Rectangle(0, 0, $clientWidth, 92)
+    $body.Bounds = New-Object System.Drawing.Rectangle(0, 92, $clientWidth, [Math]::Max(0, $clientHeight - 92))
+    & $layoutUi
+}.GetNewClosure()
+$body.Add_SizeChanged({ & $layoutUi }.GetNewClosure())
+$form.Add_SizeChanged({ & $layoutRoot }.GetNewClosure())
+
 [void]$form.Handle
+$null = [ChatCleanupConsole]::UseDarkTitleBar($form.Handle)
 $null = [ChatCleanupConsole]::SetWindowIcon($form.Handle, $iconState.Icon.Handle)
 $consoleWindow = [ChatCleanupConsole]::GetConsoleWindow()
 if ($consoleWindow -ne [IntPtr]::Zero) {
@@ -350,6 +473,8 @@ if ($consoleWindow -ne [IntPtr]::Zero) {
 }
 $formToShow = $form
 $form.Add_Shown({
+    & $layoutRoot
+    & $layoutUi
     & $positionBadge
     [void][ChatCleanupConsole]::ShowWindow($formToShow.Handle, 5)
     [void][ChatCleanupConsole]::SetForegroundWindow($formToShow.Handle)

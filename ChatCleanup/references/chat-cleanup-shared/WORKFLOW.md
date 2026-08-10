@@ -41,9 +41,12 @@ missing, create it with the managed block.
 
 `/chat-cleanup now` runs the refresh behavior when the handoff is missing or
 stale, validates the result, prepares the next-thread `/init` prompt, and uses
-`create_thread` when that host capability is exposed. If thread creation is
-unavailable, show the exact prompt for manual use. Do not use `fork_thread` as a
-fallback and do not archive the old chat automatically.
+`create_thread` when that host capability is exposed. Prefer a project target
+for registered roots. For an active local root that is not registered, use the
+host's projectless target with a directory name derived from the root and keep
+the absolute root in the prompt; never choose another project's ID. If thread
+creation is unavailable, show the exact prompt for manual use. Do not use
+`fork_thread` as a fallback and do not archive the old chat automatically.
 
 ## Handoff format
 
