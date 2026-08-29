@@ -72,7 +72,7 @@ The managed block should contain, when relevant:
 - a short optional memory candidate;
 - a validation checklist.
 
-Aim for 800-1500 words for a full handoff. Compress stale details and never
+Aim for 800-3000 words for a full handoff. Compress stale details and never
 copy an old handoff blindly. Do not include passwords, tokens, API keys,
 private keys, cookies, database credentials, session data, private dumps, or
 full chat transcripts.
@@ -90,10 +90,18 @@ full chat transcripts.
 
 ## Checkpoints
 
-The `PostCompact` hook stores a per-session count under `PLUGIN_DATA` and may
-open the native checkpoint window at 3, 5, 10, and later automatic
-compactions. A missing desktop helper must fall back to a short chat message;
-checkpoint failures must never interrupt the current work.
+The `PostCompact` hook stores one versioned count per main chat under
+`PLUGIN_DATA/compactions-v4`, keyed only by the event `session_id`. The project
+and `cwd` do not affect the counter. A new main chat therefore starts at zero.
+Sub-agent compactions are ignored when Codex marks the event with `subagent`,
+`agent_id`, or `agent_type` metadata. The native checkpoint opens once at 3 and 5 automatic compactions,
+then opens again for every compaction from 10 onward.
+When available, the window also shows the chat name and whether a project was
+detected from `cwd`. The hook resolves the name from event metadata first and
+then from the local `session_index.jsonl` entry for the same `session_id`;
+missing metadata is displayed with a safe fallback.
+A missing desktop helper must fall back to a short chat message; checkpoint
+failures must never interrupt the current work.
 
 ## Thread safety
 

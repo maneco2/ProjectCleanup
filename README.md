@@ -2,7 +2,7 @@
 
 > Handoff limpo, comandos globais e uma janela nativa para continuar o trabalho no Codex.
 
-![Janela nativa atualizada do ChatCleanup no Codex](./ChatCleanup/assets/chatcleanup-checkpoint.png)
+![Janela nativa do ChatCleanup no nível 10, com nome do chat, projeto e cantos arredondados](./ChatCleanup/assets/chatcleanup-checkpoint.png)
 
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-111827?style=flat-square&logo=openai&logoColor=white)](https://github.com/maneco2/ProjectCleanup)
 ![Global commands](https://img.shields.io/badge/commands-global-16835B?style=flat-square)
@@ -111,10 +111,15 @@ A janela nativa possui catálogos locais para:
 | 日本語 | `ja` | Japonês |
 | 한국어 | `ko` | Coreano |
 | Русский | `ru` | Russo |
-| العربية | `ar` | Layout nativo da direita para a esquerda |
+| العربية | `ar` | Árabe |
 
 Os comandos slash permanecem globais e iguais em todos os idiomas. Apenas a
 interface, descrições, níveis e mensagens da janela são traduzidos.
+
+No painel esquerdo, a janela também mostra o nome do chat e o projeto detectado.
+O nome é resolvido pelo evento ou pelo índice local `session_index.jsonl` usando
+o mesmo `session_id`. Sem `cwd`, aparece `Projeto: não detectado`; se o índice
+também não tiver um título, o fallback usa um identificador curto do chat.
 
 ## Instalação e desenvolvimento
 

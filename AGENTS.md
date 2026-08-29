@@ -50,31 +50,38 @@ cookies, private keys, tokens, or chat transcripts in the handoff.
 
 ## Quality Targets
 
-Keep this managed block between 800 and 1500 words, factual, current, and
+Keep this managed block between 800 and 3000 words, factual, current, and
 operationally useful. Do not include private dumps, full transcripts, or
 credentials.
 
 ## Current State
 
 `ChatCleanup/.codex-plugin/plugin.json` is version
-`0.4.0+codex.20260810172202`. It declares Skills and Hooks only, lists the six
+`0.4.0+codex.20260824125942`. It declares Skills and Hooks only, lists the six
 global command forms, and has no MCP server entry. The package contains 23
 files, including `ChatCleanup/assets/chatcleanup-checkpoint.png`.
 
 `ChatCleanup/hooks/hooks.json` registers `PostCompact`. Windows uses
 `post_compact.ps1`; other environments use `post_compact.py`. The hook keeps
-one counter per session under `PLUGIN_DATA/compactions`, reports milestones at
-3, 5, and 10 automatic compactions, and falls back safely when its environment
-is incomplete.
+one versioned counter per main chat under `PLUGIN_DATA/compactions-v4`, keyed
+only by `session_id`; the project and `cwd` do not affect it. New main chats
+start at zero; sub-agent events are ignored when Codex provides `subagent`,
+`agent_id`, or `agent_type` metadata. The hook reports 3 and 5 once and every automatic compaction from 10
+onward, and falls back safely when its environment is incomplete. The v4 state
+ignores older project/session counts so they do not contaminate a new chat.
 
 The Windows helper is `ChatCleanup/hooks/show_checkpoint.ps1`. It uses a fixed
 WinForms window, Codex-style knot icon, dark title bar, dark surfaces, a
 custom dark tab strip, visible tab borders, and outlined level rows for
-`LIGHT`, `MEDIUM`, and `HEAVY`. It shows recommended actions and all six
-commands; buttons only copy commands. The helper uses the 12-entry catalog in
+`LIGHT`, `MEDIUM`, and `HEAVY`. It shows the current chat name and project
+presence in the summary panel, recommended actions, and all six commands;
+buttons only copy commands. The hook reads title/name variants from the event
+or the local `session_index.jsonl` entry for the `session_id`, then falls back
+to a short chat ID; an absent `cwd` is shown as no project detected. The helper
+uses the 12-entry catalog in
 `ChatCleanup/hooks/checkpoint-locales.json` and adaptive text sizing for long
 translations. The latest source is also installed manually in the personal
-cache under `0.4.0+codex.20260810172202` because the `codex plugin add` CLI was
+cache under `0.4.0+codex.20260824125942` because the `codex plugin add` CLI was
 blocked by Windows with “Access denied”. A fresh Codex chat is required to
 load the updated cache. The `now` skill now supports an unregistered local root
 through the host's projectless target and never selects another root.
@@ -94,9 +101,8 @@ the Codex README preview rendered them as raw text.
 - Keep the README and image asset inside this repository.
 - Preserve unrelated working-tree changes and never use destructive Git reset
   or checkout operations.
-- The user authorized publishing this project to the configured private remote
-  earlier, but the current dark-UI/cachebuster changes are not committed or
-  pushed. Do not publish them until explicitly requested again.
+- The current counter-isolation changes are not committed or pushed. Do not
+  publish them until explicitly requested again.
 
 ## Relevant Files
 
@@ -113,26 +119,27 @@ the Codex README preview rendered them as raw text.
 
 ## Validated Commands
 
-`validate_plugin.py ChatCleanup` passed after the cachebuster update. PowerShell
-syntax parsing passed after the dark-theme and level-border edits. The source
-and manually installed cache copy of `show_checkpoint.ps1` have matching SHA256
-hashes. The current worktree has uncommitted changes in
-`ChatCleanup/.codex-plugin/plugin.json` and
-`ChatCleanup/hooks/show_checkpoint.ps1`; no commit or push was made for these
-latest changes. The prior remote commit remains the last published state.
+PowerShell syntax parsing, Python bytecode compilation, handoff validation,
+chat-ID isolation tests, sub-agent exclusion tests, metadata rendering tests,
+null-transcript title lookup tests, milestone tests, and a real WinForms preview
+passed. The source and manually
+installed cache copies of `post_compact.ps1`, `post_compact.py`, and
+`show_checkpoint.ps1` have matching SHA256 hashes. The current worktree has
+uncommitted changes in the handoff, hooks, workflow reference, README, and
+preview asset; no commit or push was made for these changes.
 
 ## Worktree State
 
-The managed handoff itself is refreshed locally. No commit, push, publication,
-or marketplace edit was performed by this command.
+The managed handoff itself is refreshed locally. The global hook cache was
+updated manually. No commit, push, publication, or marketplace edit was
+performed.
 
 ## Next Actions
 
-1. Validate this refreshed `AGENTS.md` and the complete plugin again.
-2. Start a fresh Codex chat and send `/chat-cleanup` to test the updated cache.
-3. Verify the dark UI visually, especially the tab-strip background and the
-   three bordered level rows.
-4. If the user explicitly requests publication, review the complete diff,
+1. Start a fresh Codex chat so the updated global hook cache is loaded.
+2. Trigger the main chat and a sub-agent; confirm only main-chat events
+   increment the current chat ID's counter.
+3. If the user explicitly requests publication, review the complete diff,
    create one commit, push to the configured private remote, and verify it.
 
 ## Risks And Guardrails

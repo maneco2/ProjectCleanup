@@ -23,7 +23,7 @@ When the user sends `/chat-cleanup refresh`:
 5. Include only useful operational facts: project scope, current state,
    important decisions, relevant files, validated commands, next actions, and
    risks. Do not include secrets, credentials, cookies, tokens, private dumps,
-   or old chat transcripts. Keep the managed block between 800 and 1500 words
+   or old chat transcripts. Keep the managed block between 800 and 3000 words
    when the project needs a full handoff.
 6. Validate the complete resulting file with
    `ChatCleanup/references/chat-cleanup-shared/scripts/validate_agent_md.py`

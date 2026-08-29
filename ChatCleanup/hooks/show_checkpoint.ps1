@@ -1,5 +1,7 @@
 param(
     [string]$MessageBase64 = '',
+    [string]$ChatNameBase64 = '',
+    [string]$ProjectNameBase64 = '',
     [ValidateSet(3, 5, 10)][int]$Level = 3,
     [int]$Count = 0,
     [switch]$Guided
@@ -77,6 +79,31 @@ function Get-FormattedText {
         [Parameter(Mandatory = $true)][object]$Value
     )
     (Get-Text -Key $Key) -f $Value
+}
+
+function Get-Base64Text {
+    param([string]$Value)
+    if ([string]::IsNullOrWhiteSpace($Value)) { return '' }
+    try { return [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Value)) } catch { return '' }
+}
+
+function Get-ContextText {
+    param([Parameter(Mandatory = $true)][string]$Key)
+    if ($culture -like 'pt*') {
+        switch ($Key) {
+            'chatLabel' { return 'Chat' }
+            'projectLabel' { return 'Projeto' }
+            'chatMissing' { return 'nome indisponível' }
+            'projectMissing' { return 'não detectado' }
+        }
+    }
+    switch ($Key) {
+        'chatLabel' { return 'Chat' }
+        'projectLabel' { return 'Project' }
+        'chatMissing' { return 'name unavailable' }
+        'projectMissing' { return 'not detected' }
+    }
+    return $Key
 }
 
 function Add-TextLabel {
@@ -158,6 +185,10 @@ $message = if ([string]::IsNullOrWhiteSpace($MessageBase64)) {
 } else {
     try { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($MessageBase64)) } catch { Get-Text -Key 'summary' }
 }
+$chatName = Get-Base64Text -Value $ChatNameBase64
+$projectName = Get-Base64Text -Value $ProjectNameBase64
+$chatValue = if ([string]::IsNullOrWhiteSpace($chatName)) { Get-ContextText -Key 'chatMissing' } else { $chatName }
+$projectValue = if ([string]::IsNullOrWhiteSpace($projectName)) { Get-ContextText -Key 'projectMissing' } else { $projectName }
 
 $levelName = switch ($Level) {
     3 { Get-Text -Key 'light' }
@@ -169,7 +200,7 @@ $levelName = switch ($Level) {
 $accent = switch ($Level) {
     3 { [System.Drawing.Color]::FromArgb(24, 121, 82) }
     5 { [System.Drawing.Color]::FromArgb(160, 111, 0) }
-    10 { [System.Drawing.Color]::FromArgb(146, 39, 35) }
+    10 { [System.Drawing.Color]::FromArgb(24, 121, 82) }
     default { [System.Drawing.Color]::FromArgb(40, 82, 145) }
 }
 $surface = [System.Drawing.Color]::FromArgb(18, 22, 28)
@@ -236,7 +267,9 @@ $summaryPanel.Padding = New-Object System.Windows.Forms.Padding(0)
 Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'automatic') -Location (New-Object System.Drawing.Point(25, 27)) -Size (New-Object System.Drawing.Size(246, 22)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 8)) -Color $textMuted | Out-Null
 $countLabel = Add-TextLabel -Parent $summaryPanel -Text ([string]$Count) -Location (New-Object System.Drawing.Point(24, 53)) -Size (New-Object System.Drawing.Size(60, 48)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 30))
 Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'detected') -Location (New-Object System.Drawing.Point(88, 79)) -Size (New-Object System.Drawing.Size(150, 22)) -Font (New-Object System.Drawing.Font('Segoe UI', 9)) -Color $textMuted | Out-Null
-Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'summary') -Location (New-Object System.Drawing.Point(25, 124)) -Size (New-Object System.Drawing.Size(246, 82)) -Font (New-Object System.Drawing.Font('Segoe UI', 9)) -Color $textSecondary | Out-Null
+Add-TextLabel -Parent $summaryPanel -Text (Get-Text -Key 'summary') -Location (New-Object System.Drawing.Point(25, 124)) -Size (New-Object System.Drawing.Size(246, 64)) -Font (New-Object System.Drawing.Font('Segoe UI', 9)) -Color $textSecondary | Out-Null
+Add-TextLabel -Parent $summaryPanel -Text ((Get-ContextText -Key 'chatLabel') + ': ' + $chatValue) -Location (New-Object System.Drawing.Point(25, 194)) -Size (New-Object System.Drawing.Size(246, 20)) -Font (New-Object System.Drawing.Font('Segoe UI Semibold', 8.5)) -Color $textPrimary | Out-Null
+Add-TextLabel -Parent $summaryPanel -Text ((Get-ContextText -Key 'projectLabel') + ': ' + $projectValue) -Location (New-Object System.Drawing.Point(25, 216)) -Size (New-Object System.Drawing.Size(246, 20)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color $textSecondary | Out-Null
 
 function Add-LevelMarker {
     param([int]$Y, [string]$Text, [bool]$Active)
@@ -278,11 +311,11 @@ function Add-LevelMarker {
     $levelLabel.RightToLeft = $form.RightToLeft
 }
 
-Add-LevelMarker -Y 226 -Text ('3 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'light')) -Active ($Level -eq 3)
-Add-LevelMarker -Y 270 -Text ('5 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'medium')) -Active ($Level -eq 5)
-Add-LevelMarker -Y 314 -Text ('10 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'heavy')) -Active ($Level -eq 10)
+Add-LevelMarker -Y 260 -Text ('3 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'light')) -Active ($Level -eq 3)
+Add-LevelMarker -Y 304 -Text ('5 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'medium')) -Active ($Level -eq 5)
+Add-LevelMarker -Y 348 -Text ('10 ' + (Get-Text -Key 'detected') + ' - ' + (Get-Text -Key 'heavy')) -Active ($Level -eq 10)
 if (-not [string]::IsNullOrWhiteSpace($MessageBase64)) {
-    Add-TextLabel -Parent $summaryPanel -Text $message -Location (New-Object System.Drawing.Point(25, 385)) -Size (New-Object System.Drawing.Size(246, 70)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color $textSecondary | Out-Null
+    Add-TextLabel -Parent $summaryPanel -Text $message -Location (New-Object System.Drawing.Point(25, 405)) -Size (New-Object System.Drawing.Size(246, 52)) -Font (New-Object System.Drawing.Font('Segoe UI', 8.5)) -Color $textSecondary | Out-Null
 }
 
 $mainPanel = New-Object System.Windows.Forms.Panel

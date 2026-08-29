@@ -40,7 +40,7 @@ Regras iniciais:
 
 ## Quality Targets
 
-- Target size: `800-1500 words`
+- Target size: `800-3000 words`
 - Approximate word count: `<fill after writing>`
 - No secrets, credentials, cookies, tokens, private dumps, or transcript noise.
 

@@ -43,7 +43,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate ChatCleanup handoff content")
     parser.add_argument("path", help="Path to the handoff file or extracted AGENTS.md block")
     parser.add_argument("--min-words", type=int, default=800)
-    parser.add_argument("--max-words", type=int, default=1500)
+    parser.add_argument("--max-words", type=int, default=3000)
     parser.add_argument("--strict-size", action="store_true", help="Fail when outside the word target")
     args = parser.parse_args()
 
