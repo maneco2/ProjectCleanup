@@ -1,4 +1,4 @@
 interface:
-  display_name: "ChatCleanup - Preview"
+  display_name: "Preview"
   short_description: "Preview the project handoff without writing"
   default_prompt: "Use /chat-cleanup preview to preview the active project handoff without writing files."

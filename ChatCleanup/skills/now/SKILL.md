@@ -1,5 +1,5 @@
 ---
-name: chat-cleanup-now
+name: now
 description: Refresh the active project's handoff and prepare a clean new Codex chat.
 ---
 

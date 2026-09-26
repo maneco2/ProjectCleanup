@@ -1,5 +1,5 @@
 ---
-name: chat-cleanup-guided
+name: guided
 description: Show the simple ChatCleanup command choices for the active project.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: chat-cleanup-refresh
+name: refresh
 description: Directly refresh the active project's AGENTS.md handoff.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: chat-cleanup-status
+name: status
 description: Report the active project's AGENTS.md handoff status without modifying files.
 ---
 

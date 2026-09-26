@@ -163,12 +163,12 @@ python ChatCleanup\references\chat-cleanup-shared\scripts\validate_agent_md.py A
     │   ├── references/agent-template.md
     │   └── scripts/validate_agent_md.py
     └── skills
-        ├── chat-cleanup-guided
-        ├── chat-cleanup-check
-        ├── chat-cleanup-preview
-        ├── chat-cleanup-status
-        ├── chat-cleanup-now
-        └── chat-cleanup-refresh
+        ├── guided
+        ├── check
+        ├── preview
+        ├── status
+        ├── now
+        └── refresh
 ```
 
 ## Princípios

@@ -1,5 +1,5 @@
 ---
-name: chat-cleanup-check
+name: check
 description: Diagnose the current chat's cleanup level without changing files or threads.
 ---
 

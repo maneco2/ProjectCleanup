@@ -1,5 +1,5 @@
 ---
-name: chat-cleanup-preview
+name: preview
 description: Draft the active project's handoff in chat without writing files.
 ---
 
