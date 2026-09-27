@@ -31,13 +31,16 @@ When installed, all commands work independently of the active project:
 - `/chat-cleanup preview` drafts the handoff in chat only.
 - `/chat-cleanup status` reports `AGENTS.md` presence, size, age, and freshness.
 - `/chat-cleanup refresh` updates only the managed block in this handoff.
-- `/chat-cleanup now` refreshes when needed, prepares `/init`, and creates a
-  project thread for registered roots or a projectless chat with the absolute
-  root in the prompt for unregistered local roots.
+- `/chat-cleanup now` refreshes when needed, creates the next chat with the
+  same title using GPT-6 Luna at maximum reasoning, then appends ` OLD` to the
+  previous chat's title. It uses the same project for registered roots or a
+  projectless chat with the absolute root in the prompt for unregistered roots.
 
-`refresh` preserves every byte outside the two markers. `now` does not use
-`fork_thread` as a fallback and does not archive the old chat. The normal
-sequence is `check`, optional `preview` or `status`, `refresh`, then `now`.
+`refresh` preserves every byte outside the two markers. `now` removes one
+existing trailing ` OLD` before reusing a title, never uses `fork_thread` as a
+fallback, and renames the old chat only after the new chat is created and
+named. It does not archive chats. The normal sequence is `check`, optional
+`preview` or `status`, `refresh`, then `now`.
 
 ## Language Settings
 

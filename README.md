@@ -40,7 +40,7 @@ Instale o plugin uma vez e use os mesmos comandos em qualquer projeto ativo:
 | `/chat-cleanup preview` | Monta um handoff proposto apenas na conversa. | Não |
 | `/chat-cleanup status` | Verifica presença, tamanho, marcadores e frescor do `AGENTS.md`. | Não |
 | `/chat-cleanup refresh` | Atualiza diretamente o bloco gerenciado do `AGENTS.md` ativo. | Sim |
-| `/chat-cleanup now` | Atualiza o handoff, prepara o `/init` e inicia o próximo chat quando o host oferece essa capacidade. | Pode |
+| `/chat-cleanup now` | Atualiza o handoff, cria o novo chat com o mesmo nome e GPT-6 Luna no esforço máximo, e renomeia o anterior com `OLD`. | Pode |
 
 Fluxo recomendado:
 

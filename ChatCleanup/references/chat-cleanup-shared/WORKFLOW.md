@@ -41,12 +41,19 @@ missing, create it with the managed block.
 
 `/chat-cleanup now` runs the refresh behavior when the handoff is missing or
 stale, validates the result, prepares the next-thread `/init` prompt, and uses
-`create_thread` when that host capability is exposed. Prefer a project target
-for registered roots. For an active local root that is not registered, use the
-host's projectless target with a directory name derived from the root and keep
-the absolute root in the prompt; never choose another project's ID. If thread
-creation is unavailable, show the exact prompt for manual use. Do not use
-`fork_thread` as a fallback and do not archive the old chat automatically.
+`create_thread` when that host capability is exposed. Capture the exact title
+of the calling chat first. Remove one trailing ` OLD` suffix (case-insensitive)
+to obtain the base title, preserving all other characters. Create the new chat
+with that title, model `gpt-6-luna`, and reasoning effort `max`. Prefer the same
+project target for registered roots. For an active local root that is not
+registered, use the host's projectless target with a directory name derived
+from the root and keep the absolute root in the prompt; never choose another
+project's ID. After a fresh `threadId` is returned, set the new chat's title to
+the base title, then rename the calling chat to `<base title> OLD`. If creation
+or new-title assignment fails or remains pending, leave the old title intact
+and report the incomplete step. If title or thread tools are unavailable, show
+the prompt, base title, and model for manual use; do not rename the old chat.
+Do not use `fork_thread` as a fallback or archive the old chat automatically.
 
 ## Handoff format
 
